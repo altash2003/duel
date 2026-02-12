@@ -1,19 +1,15 @@
-import 'dotenv/config';
-import express from 'express';
-import session from 'express-session';
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import http from 'http';
-import { Server } from 'socket.io';
+import "dotenv/config";
+import express from "express";
+import session from "express-session";
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import http from "http";
+import { Server } from "socket.io";
 
-const {
-  PORT = 3000,
-  MONGODB_URI,
-  SESSION_SECRET = 'dev_secret_change_me'
-} = process.env;
+const { PORT = 3000, MONGODB_URI, SESSION_SECRET = "dev_secret_change_me" } = process.env;
 
 if (!MONGODB_URI) {
-  console.error('Missing MONGODB_URI env var');
+  console.error("Missing MONGODB_URI env var");
   process.exit(1);
 }
 
@@ -25,6 +21,8 @@ const userSchema = new mongoose.Schema(
     username: { type: String, unique: true, index: true },
     passwordHash: String,
     isAdmin: { type: Boolean, default: false },
+    credits: { type: Number, default: 1000 },
+    avatar: { type: String, default: "avatar1" },
     createdAt: { type: Date, default: Date.now }
   },
   { minimize: false }
@@ -33,10 +31,10 @@ const userSchema = new mongoose.Schema(
 const txnSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, index: true },
-    type: { type: String, enum: ['TOPUP', 'WITHDRAW'], required: true },
+    type: { type: String, enum: ["TOPUP", "WITHDRAW"], required: true },
     amount: { type: Number, required: true },
-    status: { type: String, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' },
-    note: { type: String, default: '' },
+    status: { type: String, enum: ["PENDING", "APPROVED", "REJECTED"], default: "PENDING" },
+    note: { type: String, default: "" },
     createdAt: { type: Date, default: Date.now }
   },
   { minimize: false }
@@ -47,15 +45,15 @@ const ticketSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, index: true },
     subject: { type: String, required: true },
     message: { type: String, required: true },
-    status: { type: String, enum: ['OPEN', 'CLOSED'], default: 'OPEN' },
+    status: { type: String, enum: ["OPEN", "CLOSED"], default: "OPEN" },
     createdAt: { type: Date, default: Date.now }
   },
   { minimize: false }
 );
 
-const User = mongoose.model('User', userSchema);
-const Txn = mongoose.model('Txn', txnSchema);
-const Ticket = mongoose.model('Ticket', ticketSchema);
+const User = mongoose.model("User", userSchema);
+const Txn = mongoose.model("Txn", txnSchema);
+const Ticket = mongoose.model("Ticket", ticketSchema);
 
 // ----- App -----
 const app = express();
@@ -67,46 +65,43 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    name: 'duel.sid',
+    name: "duel.sid",
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: false // Railway terminates TLS; keep false unless you add proxy+secure cookie handling
+      sameSite: "lax",
+      secure: false
     }
   })
 );
 
-// Static
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // ----- Helpers -----
 function requireAuth(req, res, next) {
-  if (!req.session?.userId) return res.status(401).json({ error: 'Unauthorized' });
+  if (!req.session?.userId) return res.status(401).json({ error: "Unauthorized" });
   next();
 }
+
 async function requireAdmin(req, res, next) {
-  if (!req.session?.userId) return res.status(401).json({ error: 'Unauthorized' });
+  if (!req.session?.userId) return res.status(401).json({ error: "Unauthorized" });
   const me = await User.findById(req.session.userId).lean();
-  if (!me?.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+  if (!me?.isAdmin) return res.status(403).json({ error: "Forbidden" });
   next();
 }
 
 // ----- Auth -----
-app.post('/api/signup', async (req, res) => {
+app.post("/api/signup", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // username: 5-12 letters/numbers only
-    if (!/^[a-zA-Z0-9]{5,12}$/.test(username || '')) {
-      return res.status(400).json({ error: 'Username must be 5-12 characters (letters/numbers only).' });
+    if (!/^[a-zA-Z0-9]{5,12}$/.test(username || "")) {
+      return res.status(400).json({ error: "Username must be 5-12 characters (letters/numbers only)." });
     }
-
-    // password: 5-12 any chars
-    if (typeof password !== 'string' || password.length < 5 || password.length > 12) {
-      return res.status(400).json({ error: 'Password must be 5-12 characters.' });
+    if (typeof password !== "string" || password.length < 5 || password.length > 12) {
+      return res.status(400).json({ error: "Password must be 5-12 characters." });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -117,22 +112,22 @@ app.post('/api/signup', async (req, res) => {
 
     return res.json({ ok: true });
   } catch (e) {
-    if (String(e?.message || '').includes('duplicate key')) {
-      return res.status(409).json({ error: 'Username already exists.' });
+    if (String(e?.message || "").includes("duplicate key")) {
+      return res.status(409).json({ error: "Username already exists." });
     }
     console.error(e);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
-app.post('/api/login', async (req, res) => {
+app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     const u = await User.findOne({ username }).lean();
-    if (!u) return res.status(401).json({ error: 'Invalid username/password.' });
+    if (!u) return res.status(401).json({ error: "Invalid username/password." });
 
-    const ok = await bcrypt.compare(password || '', u.passwordHash);
-    if (!ok) return res.status(401).json({ error: 'Invalid username/password.' });
+    const ok = await bcrypt.compare(password || "", u.passwordHash);
+    if (!ok) return res.status(401).json({ error: "Invalid username/password." });
 
     req.session.userId = u._id.toString();
     req.session.username = u.username;
@@ -140,27 +135,52 @@ app.post('/api/login', async (req, res) => {
     return res.json({ ok: true, isAdmin: !!u.isAdmin });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
-app.post('/api/logout', (req, res) => {
+app.post("/api/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-app.get('/api/me', async (req, res) => {
+app.get("/api/me", async (req, res) => {
   if (!req.session?.userId) return res.json({ authed: false });
   const me = await User.findById(req.session.userId).lean();
-  return res.json({ authed: true, username: me?.username, isAdmin: !!me?.isAdmin });
+  return res.json({
+    authed: true,
+    username: me?.username,
+    isAdmin: !!me?.isAdmin
+  });
+});
+
+// Credits + avatar
+app.get("/api/credits", requireAuth, async (req, res) => {
+  const me = await User.findById(req.session.userId).lean();
+  res.json({
+    ok: true,
+    username: me.username,
+    credits: me.credits,
+    avatar: me.avatar,
+    isAdmin: !!me.isAdmin
+  });
+});
+
+app.post("/api/avatar", requireAuth, async (req, res) => {
+  const { avatar } = req.body;
+  const allowed = new Set(["avatar1", "avatar2", "avatar3", "avatar4", "avatar5", "avatar6"]);
+  if (!allowed.has(avatar)) return res.status(400).json({ error: "Invalid avatar" });
+
+  await User.findByIdAndUpdate(req.session.userId, { avatar });
+  res.json({ ok: true });
 });
 
 // ----- Player requests (Topup / Withdraw) -----
-app.post('/api/txns', requireAuth, async (req, res) => {
-  const { type, amount, note = '' } = req.body;
+app.post("/api/txns", requireAuth, async (req, res) => {
+  const { type, amount, note = "" } = req.body;
   const amt = Number(amount);
 
-  if (!['TOPUP', 'WITHDRAW'].includes(type)) return res.status(400).json({ error: 'Invalid type.' });
-  if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount.' });
+  if (!["TOPUP", "WITHDRAW"].includes(type)) return res.status(400).json({ error: "Invalid type." });
+  if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: "Invalid amount." });
 
   const doc = await Txn.create({
     userId: req.session.userId,
@@ -172,15 +192,15 @@ app.post('/api/txns', requireAuth, async (req, res) => {
   return res.json({ ok: true, txn: doc });
 });
 
-app.get('/api/txns', requireAuth, async (req, res) => {
+app.get("/api/txns", requireAuth, async (req, res) => {
   const rows = await Txn.find({ userId: req.session.userId }).sort({ createdAt: -1 }).lean();
   res.json({ ok: true, rows });
 });
 
 // ----- Support tickets -----
-app.post('/api/tickets', requireAuth, async (req, res) => {
+app.post("/api/tickets", requireAuth, async (req, res) => {
   const { subject, message } = req.body;
-  if (!subject || !message) return res.status(400).json({ error: 'Missing fields.' });
+  if (!subject || !message) return res.status(400).json({ error: "Missing fields." });
 
   const doc = await Ticket.create({
     userId: req.session.userId,
@@ -191,76 +211,261 @@ app.post('/api/tickets', requireAuth, async (req, res) => {
   return res.json({ ok: true, ticket: doc });
 });
 
-app.get('/api/tickets', requireAuth, async (req, res) => {
+app.get("/api/tickets", requireAuth, async (req, res) => {
   const rows = await Ticket.find({ userId: req.session.userId }).sort({ createdAt: -1 }).lean();
   res.json({ ok: true, rows });
 });
 
 // ----- Admin APIs -----
-app.get('/api/admin/players', requireAdmin, async (req, res) => {
-  const rows = await User.find({}, { username: 1, isAdmin: 1, createdAt: 1 }).sort({ createdAt: -1 }).lean();
+app.get("/api/admin/players", requireAdmin, async (req, res) => {
+  const rows = await User.find({}, { username: 1, isAdmin: 1, credits: 1, avatar: 1, createdAt: 1 })
+    .sort({ createdAt: -1 })
+    .lean();
   res.json({ ok: true, rows });
 });
 
-app.get('/api/admin/txns', requireAdmin, async (req, res) => {
+app.get("/api/admin/user/:username", requireAdmin, async (req, res) => {
+  const u = await User.findOne({ username: req.params.username }).lean();
+  if (!u) return res.status(404).json({ error: "Not found" });
+  res.json({ ok: true, username: u.username, credits: u.credits, avatar: u.avatar, isAdmin: !!u.isAdmin });
+});
+
+app.get("/api/admin/txns", requireAdmin, async (req, res) => {
   const rows = await Txn.find({}).sort({ createdAt: -1 }).lean();
   res.json({ ok: true, rows });
 });
 
-app.post('/api/admin/txns/:id', requireAdmin, async (req, res) => {
+app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   const { status } = req.body;
-  if (!['APPROVED', 'REJECTED'].includes(status)) return res.status(400).json({ error: 'Invalid status.' });
+  if (!["APPROVED", "REJECTED"].includes(status)) return res.status(400).json({ error: "Invalid status." });
 
   const updated = await Txn.findByIdAndUpdate(req.params.id, { status }, { new: true }).lean();
   res.json({ ok: true, updated });
 });
 
-app.get('/api/admin/tickets', requireAdmin, async (req, res) => {
+app.get("/api/admin/tickets", requireAdmin, async (req, res) => {
   const rows = await Ticket.find({}).sort({ createdAt: -1 }).lean();
   res.json({ ok: true, rows });
 });
 
-app.post('/api/admin/tickets/:id', requireAdmin, async (req, res) => {
+app.post("/api/admin/tickets/:id", requireAdmin, async (req, res) => {
   const { status } = req.body;
-  if (!['OPEN', 'CLOSED'].includes(status)) return res.status(400).json({ error: 'Invalid status.' });
+  if (!["OPEN", "CLOSED"].includes(status)) return res.status(400).json({ error: "Invalid status." });
 
   const updated = await Ticket.findByIdAndUpdate(req.params.id, { status }, { new: true }).lean();
   res.json({ ok: true, updated });
 });
 
-// ----- Socket realtime presence + chat -----
-const online = new Map(); // socketId -> { userId, username }
+// ------------------ REALTIME: presence + seats + proposal + pot + emotes ------------------
+const online = new Map(); // socketId -> { username, avatar, speaking }
+const room = {
+  seat1: null,
+  seat2: null,
+  proposal: null, // { by, game, roundsKey, bet, ts }
+  pot: 0,
+  settingsLocked: false
+};
 
-io.use((socket, next) => {
-  // basic session-less auth: client passes username from /api/me check
-  // (still OK for MVP). For stricter auth, wire real session middleware into socket.io.
-  next();
-});
+function snapshot() {
+  const players = Array.from(online.values()).map((p) => ({
+    username: p.username,
+    avatar: p.avatar || "avatar1",
+    seat: room.seat1 === p.username ? 1 : room.seat2 === p.username ? 2 : 0,
+    speaking: !!p.speaking
+  }));
+  return {
+    room: {
+      seat1: room.seat1,
+      seat2: room.seat2,
+      proposal: room.proposal,
+      pot: room.pot,
+      settingsLocked: room.settingsLocked
+    },
+    players
+  };
+}
 
-io.on('connection', (socket) => {
-  socket.on('hello', ({ username }) => {
-    if (typeof username !== 'string' || !username.trim()) return;
-    online.set(socket.id, { username: username.trim() });
-    io.emit('presence', Array.from(online.values()));
+function clearMatch() {
+  room.seat1 = null;
+  room.seat2 = null;
+  room.proposal = null;
+  room.pot = 0;
+  room.settingsLocked = false;
+}
+
+async function getUser(username) {
+  return User.findOne({ username }).lean();
+}
+
+async function setCredits(username, newCredits) {
+  await User.updateOne({ username }, { $set: { credits: Math.max(0, Math.floor(newCredits)) } });
+}
+
+io.on("connection", (socket) => {
+  socket.on("hello", async ({ username }) => {
+    try {
+      if (typeof username !== "string" || !username.trim()) return;
+      const u = await getUser(username.trim());
+      if (!u) return;
+
+      online.set(socket.id, { username: u.username, avatar: u.avatar, speaking: false });
+      io.emit("state", snapshot());
+    } catch (e) {
+      console.error(e);
+    }
   });
 
-  socket.on('chat', (msg) => {
+  socket.on("chat", (msg) => {
     const u = online.get(socket.id);
     if (!u) return;
-    const text = String(msg || '').slice(0, 200);
+    const text = String(msg || "").slice(0, 200);
     if (!text.trim()) return;
-    io.emit('chat', { user: u.username, text, ts: Date.now() });
+    io.emit("chat", { user: u.username, text, ts: Date.now() });
   });
 
-  socket.on('speaking', (isSpeaking) => {
+  socket.on("speaking", (isSpeaking) => {
     const u = online.get(socket.id);
     if (!u) return;
-    io.emit('speaking', { user: u.username, speaking: !!isSpeaking });
+    u.speaking = !!isSpeaking;
+    io.emit("state", snapshot());
   });
 
-  socket.on('disconnect', () => {
+  // Seat: 1 seat only, server enforced
+  socket.on("takeSeat", ({ seat }) => {
+    const u = online.get(socket.id);
+    if (!u) return;
+
+    // already seated
+    if (room.seat1 === u.username || room.seat2 === u.username) return;
+
+    if (seat === 1) {
+      if (room.seat1) return;
+      room.seat1 = u.username;
+    } else if (seat === 2) {
+      if (room.seat2) return;
+      room.seat2 = u.username;
+    } else return;
+
+    // reset pending proposal when seating changes
+    room.proposal = null;
+    room.pot = 0;
+    room.settingsLocked = false;
+
+    io.emit("state", snapshot());
+  });
+
+  socket.on("leaveSeat", () => {
+    const u = online.get(socket.id);
+    if (!u) return;
+
+    if (room.seat1 === u.username) room.seat1 = null;
+    if (room.seat2 === u.username) room.seat2 = null;
+
+    room.proposal = null;
+    room.pot = 0;
+    room.settingsLocked = false;
+
+    io.emit("state", snapshot());
+  });
+
+  // Seat1 proposes: game + rounds + bet
+  socket.on("proposal:create", async ({ game, roundsKey, bet }) => {
+    const u = online.get(socket.id);
+    if (!u) return;
+    if (room.seat1 !== u.username) return; // only seat1 proposes
+    if (!room.seat2) return;
+    if (room.settingsLocked) return;
+
+    const allowedGames = new Set(["dice", "coin", "hl", "roulette", "rps", "ttt"]);
+    const allowedRounds = new Set(["sd1", "bo3", "bo5", "rt3", "rt5"]);
+    if (!allowedGames.has(game) || !allowedRounds.has(roundsKey)) return;
+
+    const wager = Number(bet);
+    if (!Number.isFinite(wager) || wager <= 0) return;
+
+    const p1 = await getUser(room.seat1);
+    const p2 = await getUser(room.seat2);
+    if (!p1 || !p2) return;
+
+    if (p1.credits < wager || p2.credits < wager) {
+      socket.emit("proposal:error", { error: "One of the players has insufficient credits." });
+      return;
+    }
+
+    room.proposal = { by: u.username, game, roundsKey, bet: Math.floor(wager), ts: Date.now() };
+    room.pot = 0;
+    room.settingsLocked = false;
+
+    io.emit("state", snapshot());
+    io.emit("proposal:incoming", { to: room.seat2, proposal: room.proposal });
+  });
+
+  // Seat2 accepts/declines
+  socket.on("proposal:respond", async ({ accept }) => {
+    const u = online.get(socket.id);
+    if (!u) return;
+    if (!room.proposal) return;
+    if (u.username !== room.seat2) return;
+    if (room.settingsLocked) return;
+
+    if (!accept) {
+      room.proposal = null;
+      room.pot = 0;
+      room.settingsLocked = false;
+      io.emit("state", snapshot());
+      io.emit("proposal:result", { ok: true, accepted: false });
+      return;
+    }
+
+    const wager = room.proposal.bet;
+    const p1 = await getUser(room.seat1);
+    const p2 = await getUser(room.seat2);
+    if (!p1 || !p2) return;
+
+    if (p1.credits < wager || p2.credits < wager) {
+      io.emit("proposal:result", { ok: false, accepted: false, error: "Insufficient credits." });
+      return;
+    }
+
+    await setCredits(room.seat1, p1.credits - wager);
+    await setCredits(room.seat2, p2.credits - wager);
+
+    room.pot = wager * 2;
+    room.settingsLocked = true;
+
+    io.emit("proposal:result", { ok: true, accepted: true, proposal: room.proposal, pot: room.pot });
+    io.emit("state", snapshot());
+  });
+
+  // Duel emotes: only seat1/seat2 can send
+  socket.on("duel:emote", ({ emote }) => {
+    const u = online.get(socket.id);
+    if (!u) return;
+    if (u.username !== room.seat1 && u.username !== room.seat2) return;
+
+    const allowed = new Set(["😈", "😂", "🔥", "💀", "😤", "😎"]);
+    if (!allowed.has(emote)) return;
+
+    io.emit("duel:emote", { from: u.username, emote, ts: Date.now() });
+  });
+
+  // Called by client when match ends to clear seats
+  socket.on("match:ended", () => {
+    clearMatch();
+    io.emit("state", snapshot());
+  });
+
+  socket.on("disconnect", () => {
+    const u = online.get(socket.id);
     online.delete(socket.id);
-    io.emit('presence', Array.from(online.values()));
+
+    if (u) {
+      if (room.seat1 === u.username || room.seat2 === u.username) {
+        clearMatch();
+      }
+    }
+
+    io.emit("state", snapshot());
   });
 });
 
