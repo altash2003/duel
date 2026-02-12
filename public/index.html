@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CASINO DUEL ARENA - LIVE</title>
+  <title>DUEL LIVE</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -16,9 +16,9 @@
       --grid-line:rgba(255,255,255,0.05);
       --sidebar-width:340px;
 
-      /* CHANGES: make chat taller by shrinking players panel a bit */
-      --betting-height:265px;
-      --players-height:265px; /* was 320px */
+      /* chat a bit taller */
+      --betting-height:255px;
+      --players-height:255px;
     }
 
     *{box-sizing:border-box}
@@ -30,8 +30,9 @@
       background-size:20px 20px;
       color:var(--text);
       font-family:'Press Start 2P',cursive;
-      margin:0; padding:0;
-      height:100vh; width:100vw;
+      margin:0;
+      height:100vh;
+      width:100vw;
       overflow:hidden;
       display:flex;
     }
@@ -45,43 +46,93 @@
     .custom-scroll:hover::-webkit-scrollbar-thumb{background-color:#555}
 
     .main-wrapper{
-      display:flex; width:100%; height:100%;
-      padding:20px; gap:20px;
-      overflow:hidden; min-height:0;
+      display:flex;
+      width:100%;
+      height:100%;
+      padding:20px;
+      gap:20px;
+      overflow:hidden;
+      min-height:0;
     }
+
     .game-section{
       flex:1 1 auto;
-      display:flex; flex-direction:column;
-      height:100%; overflow:hidden; min-width:0; min-height:0;
+      display:flex;
+      flex-direction:column;
+      height:100%;
+      overflow:hidden;
+      min-width:0;
+      min-height:0;
     }
+
     .social-sidebar{
       width:var(--sidebar-width);
       min-width:var(--sidebar-width);
-      display:flex; flex-direction:column;
-      gap:15px; height:100%;
-      overflow:hidden; flex:0 0 var(--sidebar-width); min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:15px;
+      height:100%;
+      overflow:hidden;
+      flex:0 0 var(--sidebar-width);
+      min-height:0;
     }
 
     .top-bar{
-      width:100%; display:flex; justify-content:space-between; align-items:center;
-      margin-bottom:15px; border-bottom:4px solid #333; padding-bottom:15px;
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:15px;
+      border-bottom:4px solid #333;
+      padding-bottom:15px;
       flex-shrink:0;
+      flex-wrap:wrap;
     }
+
     h1{color:var(--accent);font-size:20px;text-shadow:3px 3px 0 #000;margin:0}
 
-    .settings-group{display:flex;gap:10px;align-items:center}
+    .settings-group{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
     select{
       background:#000;color:#fff;border:2px solid #555;
       padding:10px;font-family:'Press Start 2P';font-size:10px;cursor:pointer;text-transform:uppercase;
     }
+    select:disabled{opacity:.35;cursor:not-allowed}
     select:hover{border-color:var(--accent)}
-    .reset-btn{
-      background:#ff4757;color:#fff;border:2px solid #000;
-      padding:10px 15px;font-size:10px;font-family:'Press Start 2P';
+
+    .btn{
+      background:#2f3640;color:#fff;border:2px solid #000;
+      padding:10px 12px;font-size:10px;font-family:'Press Start 2P';
       cursor:pointer;box-shadow:3px 3px 0 #000;
     }
-    .reset-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
-    .target-display{background:#333;color:#aaa;padding:10px;font-size:10px;border:2px solid #555}
+    .btn.yellow{background:var(--accent);color:#000}
+    .btn.green{background:#2ecc71;color:#000}
+    .btn.red{background:#ff4757;color:#fff}
+    .btn.gray{background:#555;color:#fff}
+    .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
+
+    .pill{
+      background:#000;
+      border:2px solid #555;
+      padding:10px 12px;
+      font-size:10px;
+      color:#aaa;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      min-width:220px;
+    }
+    .pill b{color:#fff}
+    .pill .me{color:var(--accent)}
+    .pill .credits{color:#2ecc71}
 
     .game-selector{
       display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
@@ -94,24 +145,69 @@
     }
     .game-tab:hover{background:#444;color:#fff;top:-2px}
     .game-tab.active{background:var(--accent);color:#000;border-color:#fff;box-shadow:0 0 10px var(--accent);z-index:2}
-    .game-tab.disabled{opacity:.3;pointer-events:none;filter:grayscale(1)}
+    .game-tab.disabled{opacity:.25;pointer-events:none;filter:grayscale(1)}
+    .game-tab.locked{opacity:.5;pointer-events:none}
 
     .arena-container{
-      display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:25px;align-items:stretch;
-      flex-grow:1;min-height:0;padding:10px;overflow:hidden;
+      display:grid;
+      grid-template-columns:1fr 1.2fr 1fr;
+      gap:20px;
+      align-items:stretch;
+      flex-grow:1;
+      min-height:0;
+      padding:10px;
+      overflow:hidden;
     }
 
     .player-hud{
-      background:var(--bg-panel);border:4px solid #000;display:flex;flex-direction:column;position:relative;
-      box-shadow:4px 4px 0 #000;transition:all .3s ease;height:100%;z-index:1;
+      background:var(--bg-panel);
+      border:4px solid #000;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      box-shadow:4px 4px 0 #000;
+      height:100%;
+      z-index:1;
+      overflow:hidden;
     }
+
     .player-header{
-      padding:10px;text-align:center;border-bottom:4px solid #000;font-size:12px;height:40px;
-      display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#333;color:#fff;
+      padding:10px;
+      text-align:center;
+      border-bottom:4px solid #000;
+      font-size:12px;
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      background:#333;
+      color:#fff;
+      gap:10px;
     }
-    .p1-hud.active-turn{border-color:var(--p1-color);box-shadow:0 0 20px var(--p1-color);z-index:10;transform:scale(1.02)}
+
+    .avatar{
+      width:26px;height:26px;
+      border:2px solid #000;
+      background:#111;
+      box-shadow:2px 2px 0 #000;
+      image-rendering:pixelated;
+      display:grid;place-items:center;
+      font-family:'Rajdhani',sans-serif;
+      font-weight:900;
+      color:#fff;
+      font-size:14px;
+    }
+    .avatar.a1{background:#6c5ce7}
+    .avatar.a2{background:#00b894}
+    .avatar.a3{background:#e17055}
+    .avatar.a4{background:#0984e3}
+    .avatar.a5{background:#d63031}
+    .avatar.a6{background:#2d3436}
+
+    .p1-hud.active-turn{border-color:var(--p1-color);box-shadow:0 0 20px var(--p1-color);z-index:10;transform:scale(1.01)}
     .p1-hud.active-turn .player-header{background:var(--p1-color)}
-    .p2-hud.active-turn{border-color:var(--p2-color);box-shadow:0 0 20px var(--p2-color);z-index:10;transform:scale(1.02)}
+    .p2-hud.active-turn{border-color:var(--p2-color);box-shadow:0 0 20px var(--p2-color);z-index:10;transform:scale(1.01)}
     .p2-hud.active-turn .player-header{background:var(--p2-color)}
 
     .score-area{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-grow:1;min-height:0}
@@ -120,38 +216,79 @@
     @keyframes blink{50%{opacity:0}}
 
     .controls-area{
-      padding:15px;display:flex;flex-direction:column;gap:10px;justify-content:center;
-      min-height:120px;background:rgba(0,0,0,.2);flex-shrink:0;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      justify-content:center;
+      background:rgba(0,0,0,.2);
+      flex-shrink:0;
     }
-    .arcade-btn{position:relative;display:block;width:100%;padding:12px 5px;font-family:'Press Start 2P';font-size:10px;text-transform:uppercase;border:none;cursor:pointer;background:none;margin-bottom:5px}
-    .arcade-btn::before{
-      content:'';position:absolute;top:0;left:0;width:100%;height:100%;
-      border:3px solid #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.2),4px 4px 0 #000;
-      z-index:-1;transition:all .1s;background:#444;
+
+    .group{
+      border:2px solid #333;
+      background:#0b0b0f;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
     }
-    .p1-btn::before{background:var(--p1-color)}
-    .p2-btn::before{background:var(--p2-color)}
-    .arcade-btn:active::before{transform:translate(3px,3px);box-shadow:inset 2px 2px 0 rgba(0,0,0,.2),1px 1px 0 #000}
-    .arcade-btn:disabled{cursor:not-allowed;filter:grayscale(100%);opacity:.3;pointer-events:none}
+    .group-title{font-size:9px;color:#aaa}
+
+    .arcade-btn{
+      width:100%;
+      padding:12px 8px;
+      font-family:'Press Start 2P';
+      font-size:10px;
+      text-transform:uppercase;
+      border:2px solid #000;
+      cursor:pointer;
+      background:#444;
+      box-shadow:3px 3px 0 #000;
+    }
+    .arcade-btn.p1{background:var(--p1-color);color:#fff}
+    .arcade-btn.p2{background:var(--p2-color);color:#fff}
+    .arcade-btn:disabled{opacity:.25;cursor:not-allowed;filter:grayscale(1)}
 
     .seat-btn{
-      width:100%;padding:20px;background:#333;color:#aaa;border:2px dashed #666;
-      font-family:'Press Start 2P';cursor:pointer;font-size:10px;text-transform:uppercase;
-      margin-top:auto;margin-bottom:auto;transition:all .2s
+      width:100%;
+      padding:16px 10px;
+      background:#333;
+      color:#aaa;
+      border:2px dashed #666;
+      font-family:'Press Start 2P';
+      cursor:pointer;
+      font-size:10px;
+      text-transform:uppercase;
     }
-    .seat-btn:hover{color:#fff;border-color:#fff;background:#444;transform:scale(1.05)}
+    .seat-btn:hover{color:#fff;border-color:#fff;background:#444}
 
     .center-stage{
       background:#000;border:4px solid #333;display:flex;flex-direction:column;position:relative;
       box-shadow:inset 0 0 20px rgba(0,0,0,.8);height:100%;
     }
-    .round-tracker{background:#222;color:#fff;text-align:center;padding:8px;font-size:12px;border-bottom:2px solid #444;letter-spacing:2px;text-shadow:2px 2px 0 #000;flex-shrink:0}
+
+    .round-tracker{
+      background:#222;color:#fff;text-align:center;padding:8px;font-size:12px;border-bottom:2px solid #444;
+      letter-spacing:2px;text-shadow:2px 2px 0 #000;flex-shrink:0
+    }
     .round-tracker span{color:var(--accent)}
+
     .marquee-status{
       background:#111;border-bottom:2px solid #444;color:#888;text-align:center;
       padding:10px;font-size:10px;letter-spacing:1px;min-height:35px;display:flex;align-items:center;justify-content:center;flex-shrink:0
     }
-    .game-board{flex-grow:1;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden;perspective:1000px;min-height:0}
+
+    .pot-line{
+      background:#0f0f0f;border-bottom:2px solid #333;color:var(--accent);
+      text-align:center;padding:10px;font-size:10px;letter-spacing:1px;
+      min-height:35px;display:none;align-items:center;justify-content:center;flex-shrink:0
+    }
+
+    .game-board{
+      flex-grow:1;display:flex;align-items:center;justify-content:center;
+      padding:20px;position:relative;overflow:hidden;perspective:1000px;min-height:0
+    }
     .vs-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;font-weight:900;color:rgba(255,255,255,.03);font-family:'Rajdhani',sans-serif;pointer-events:none;z-index:0}
 
     /* sidebar panels */
@@ -165,53 +302,60 @@
     }
 
     .betting-panel{padding:15px;border-bottom:4px solid #000;background:#191919}
+    .betting-wrapper{position:relative;height:var(--betting-height);flex:0 0 var(--betting-height)}
     .betting-overlay{
       position:absolute;top:0;left:0;width:100%;height:100%;
       background:rgba(0,0,0,.85);z-index:10;
       display:flex;align-items:center;justify-content:center;
       color:#aaa;font-size:10px;text-align:center;padding:20px;line-height:1.5;
     }
-    .betting-wrapper{position:relative;height:var(--betting-height);flex:0 0 var(--betting-height)}
+
     .wallet{text-align:center;color:var(--accent);margin-bottom:10px;font-size:10px}
     .bet-label{font-size:8px;color:#666;margin-bottom:5px;text-align:center;text-transform:uppercase;letter-spacing:1px}
     .bet-controls{display:flex;gap:5px;margin-bottom:10px}
     .bet-btn{flex:1;font-size:8px;padding:12px 5px;border:2px solid #333;background:#222;color:#888;cursor:pointer;font-family:'Press Start 2P';transition:all .1s}
     .bet-btn:hover{border-color:#666;color:#fff}
     .bet-btn.selected{border-color:#fff;color:#000;box-shadow:0 0 10px rgba(255,255,255,.2)}
-    .bet-btn.p1-btn.selected{background:var(--p1-color)}
-    .bet-btn.p2-btn.selected{background:var(--p2-color)}
+    .bet-btn.p1.selected{background:var(--p1-color)}
+    .bet-btn.p2.selected{background:var(--p2-color)}
 
-    /* placeholder cut FIX: line-height + padding */
     .bet-input{
       width:100%;background:#000;border:2px solid #555;color:#fff;
       padding:14px 10px;font-family:'Press Start 2P';font-size:12px;line-height:1.2;
       text-align:center;margin-bottom:5px;height:48px;
     }
-    .place-bet-btn{width:100%;background:#2ecc71;color:#000;border:2px solid #000;padding:12px;font-family:'Press Start 2P';cursor:pointer;font-size:10px;margin-top:5px}
+    .place-bet-btn{
+      width:100%;background:#2ecc71;color:#000;border:2px solid #000;padding:12px;font-family:'Press Start 2P';
+      cursor:pointer;font-size:10px;margin-top:5px
+    }
     .place-bet-btn:disabled{background:#555;cursor:not-allowed}
 
-    /* players */
     .player-list-container{height:var(--players-height);flex:0 0 var(--players-height);min-height:0;display:flex;flex-direction:column}
     .player-list{flex-grow:1;padding:0;background:#2f3640;overflow-y:auto;min-height:0}
 
-    /* CHANGES: reduce spacing */
     .player-item{
       display:flex;align-items:center;justify-content:space-between;
-      padding:8px 12px; /* was 12px 15px */
+      padding:8px 12px;
       border-bottom:1px solid #222;
       font-size:16px;color:#fff;background:#2f3640;
       font-family:'Rajdhani',sans-serif;font-weight:700;
+      gap:10px;
+      cursor:pointer;
     }
     .player-item:hover{background:#383f4d}
-    .player-name{flex-grow:1}
+    .player-name{flex-grow:1;display:flex;gap:10px;align-items:center}
+    .seatTag{font-size:11px;color:#aaa;border:1px solid #444;border-radius:999px;padding:1px 8px}
     .voice-icon{color:rgba(255,255,255,.2);font-size:14px;transition:all .1s}
     .voice-icon.speaking{color:#2ecc71;text-shadow:0 0 5px #2ecc71;transform:scale(1.1)}
-    .mic-controls{padding:10px;background:#222;border-top:2px solid #000;display:flex;align-items:center;justify-content:space-between;font-size:9px;color:#aaa;flex-shrink:0}
+
+    .mic-controls{
+      padding:10px;background:#222;border-top:2px solid #000;display:flex;align-items:center;justify-content:space-between;
+      font-size:9px;color:#aaa;flex-shrink:0
+    }
     .mic-btn{background:none;border:2px solid #555;color:#aaa;padding:6px 10px;cursor:pointer;font-family:'Press Start 2P';font-size:8px}
     .mic-btn.active{border-color:#2ecc71;color:#2ecc71}
     .mic-btn:hover{border-color:#fff;color:#fff}
 
-    /* chat */
     .chat-container-box{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
     .chat-inner{flex-grow:1;display:flex;flex-direction:column;background:#1e1e24;min-height:0;overflow:hidden}
     .chat-log{flex-grow:1;padding:15px;font-size:14px;line-height:1.5;color:#ccc;font-family:'Rajdhani',sans-serif;font-weight:600;overflow-y:auto}
@@ -226,7 +370,7 @@
       outline:none;height:52px;
     }
 
-    /* visuals (same as your mock) ... keep minimal here */
+    /* dice visuals */
     .dice-row{display:flex;gap:10px;z-index:1}
     .die{width:70px;height:70px;background:#fff;border:4px solid #000;border-radius:8px;display:grid;grid-template-columns:repeat(3,1fr);padding:5px;box-shadow:4px 4px 0 rgba(0,0,0,.5)}
     .dot{background:#000;width:14px;height:14px;border-radius:50%;margin:auto;visibility:hidden}
@@ -238,6 +382,54 @@
     .die[v="6"] .dot:nth-child(1),.die[v="6"] .dot:nth-child(3),.die[v="6"] .dot:nth-child(4),.die[v="6"] .dot:nth-child(6),.die[v="6"] .dot:nth-child(7),.die[v="6"] .dot:nth-child(9){visibility:visible}
     .shaking{animation:shake .5s infinite}
     @keyframes shake{0%{transform:translate(1px,1px) rotate(0deg)}25%{transform:translate(-2px,-2px) rotate(2deg)}50%{transform:translate(2px,0px) rotate(-2deg)}75%{transform:translate(-1px,2px) rotate(1deg)}100%{transform:translate(1px,-2px) rotate(-1deg)}}
+
+    /* proposal modal */
+    .modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.75);
+      z-index:999;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .modalInner{
+      width:min(560px,92vw);
+      background:#000;
+      border:4px solid #333;
+      padding:14px;
+      box-shadow:6px 6px 0 #000;
+    }
+    .modalText{
+      color:#ddd;
+      font-family:'Rajdhani',sans-serif;
+      font-size:16px;
+      line-height:1.6;
+      margin-top:10px;
+    }
+    .modalBtns{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    /* emote pop */
+    .emote-pop{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      font-size:64px;
+      opacity:0;
+      pointer-events:none;
+      text-shadow:4px 4px 0 #000;
+      transition:opacity .15s, transform .15s;
+    }
+    .emote-pop.show{
+      opacity:1;
+      transform:translate(-50%,-60%);
+    }
 
     @media (max-width:950px){
       body{overflow:auto;height:auto}
@@ -255,57 +447,64 @@
 <div class="main-wrapper">
   <div class="game-section">
     <div class="top-bar">
-      <h1>CASINO</h1>
+      <div>
+        <h1>DUEL LIVE</h1>
+        <div class="pill" style="margin-top:10px">
+          <div><b class="me">YOU:</b> <span id="meName">-</span></div>
+          <div><b class="credits">CREDITS:</b> <span id="meCredits">0</span> TC</div>
+        </div>
+      </div>
+
       <div class="settings-group">
-        <div class="target-display" id="targetDisplay">TARGET: 1</div>
-        <select id="roundMode" onchange="resetMatch()">
-          <option value="1">1 Round (Sudden Death)</option>
-          <option value="2">Best of 3 (First to 2)</option>
-          <option value="3">Best of 5 (First to 3)</option>
-        </select>
-        <button onclick="resetMatch()" class="reset-btn">RESET</button>
-        <button onclick="goSupport()" class="reset-btn" style="background:#feca57;color:#000">SUPPORT</button>
-        <button id="adminBtn" onclick="goAdmin()" class="reset-btn" style="display:none;background:#2ecc71;color:#000">ADMIN</button>
-        <button onclick="logout()" class="reset-btn" style="background:#555">LOGOUT</button>
+        <button class="btn gray" onclick="location.reload()">REFRESH</button>
+        <button class="btn yellow" onclick="goSupport()">SUPPORT</button>
+        <button id="adminBtn" class="btn green" onclick="goAdmin()" style="display:none">ADMIN</button>
+        <button class="btn gray" onclick="logout()">LOGOUT</button>
       </div>
     </div>
 
-    <div class="game-selector">
-      <button onclick="setGame('dice')" class="game-tab active" id="tab-dice">DICE</button>
-      <button onclick="setGame('coin')" class="game-tab" id="tab-coin">COIN</button>
-      <button onclick="setGame('hl')" class="game-tab" id="tab-hl">HI-LO</button>
-      <button onclick="setGame('roulette')" class="game-tab" id="tab-roulette">ROULETTE</button>
-      <button onclick="setGame('rps')" class="game-tab" id="tab-rps">R.P.S.</button>
-      <button onclick="setGame('ttt')" class="game-tab" id="tab-ttt">TIC-TAC-TOE</button>
+    <div class="game-selector" id="gameTabs">
+      <button class="game-tab active" id="tab-dice" onclick="tabPick('dice')">DICE</button>
+      <button class="game-tab" id="tab-coin" onclick="tabPick('coin')">COIN</button>
+      <button class="game-tab" id="tab-hl" onclick="tabPick('hl')">HI-LO</button>
+      <button class="game-tab" id="tab-roulette" onclick="tabPick('roulette')">ROULETTE</button>
+      <button class="game-tab" id="tab-rps" onclick="tabPick('rps')">R.P.S.</button>
+      <button class="game-tab" id="tab-ttt" onclick="tabPick('ttt')">TIC-TAC-TOE</button>
     </div>
 
     <div class="arena-container">
       <div class="player-hud p1-hud" id="p1Panel">
-        <div class="player-header"><div id="p1Name">EMPTY</div></div>
+        <div class="player-header">
+          <div class="avatar" id="p1Avatar">1</div>
+          <div id="p1Name">EMPTY</div>
+        </div>
         <div class="score-area">
           <div class="score-display" id="p1Score">0</div>
           <div class="match-point" id="p1MatchPoint">MATCH POINT</div>
         </div>
-        <div class="controls-area" id="p1Controls">
-          <button class="seat-btn" onclick="toggleSeat(1)">TAKE SEAT</button>
-        </div>
+        <div class="controls-area" id="p1Controls"></div>
       </div>
 
       <div class="center-stage">
         <div class="round-tracker" id="roundTracker">ROUND <span>1</span></div>
         <div class="marquee-status" id="status">WAITING FOR PLAYERS...</div>
-        <div class="game-board" id="gameVisuals"><div class="vs-badge">VS</div></div>
+        <div class="pot-line" id="potLine">POT: <span id="potAmount">0</span> TC</div>
+        <div class="game-board" id="gameVisuals">
+          <div class="vs-badge">VS</div>
+          <div class="emote-pop" id="emotePop">🔥</div>
+        </div>
       </div>
 
       <div class="player-hud p2-hud" id="p2Panel">
-        <div class="player-header"><div id="p2Name">EMPTY</div></div>
+        <div class="player-header">
+          <div class="avatar" id="p2Avatar">2</div>
+          <div id="p2Name">EMPTY</div>
+        </div>
         <div class="score-area">
           <div class="score-display" id="p2Score">0</div>
           <div class="match-point" id="p2MatchPoint">MATCH POINT</div>
         </div>
-        <div class="controls-area" id="p2Controls">
-          <button class="seat-btn" onclick="toggleSeat(2)">TAKE SEAT</button>
-        </div>
+        <div class="controls-area" id="p2Controls"></div>
       </div>
     </div>
   </div>
@@ -314,19 +513,20 @@
     <div class="sidebar-panel betting-wrapper">
       <div class="panel-header">SPECTATOR BETTING</div>
       <div class="betting-panel">
-        <div class="wallet" id="walletDisplay">WALLET: 1000 TC</div>
+        <div class="wallet" id="walletDisplay">WALLET: 0 TC</div>
+
         <div class="bet-label">STEP 1: CHOOSE FIGHTER</div>
         <div class="bet-controls">
-          <button class="bet-btn p1-btn" onclick="selectBet(1)" id="betP1Btn">BET P1</button>
-          <button class="bet-btn p2-btn" onclick="selectBet(2)" id="betP2Btn">BET P2</button>
+          <button class="bet-btn p1" onclick="selectBet(1)" id="betP1Btn">BET P1</button>
+          <button class="bet-btn p2" onclick="selectBet(2)" id="betP2Btn">BET P2</button>
         </div>
 
         <div class="bet-label" style="margin-top:10px;">STEP 2: WAGER</div>
-        <input type="number" id="betAmount" class="bet-input" placeholder="AMOUNT" min="10" max="1000000">
+        <input type="number" id="betAmount" class="bet-input" placeholder="AMOUNT" min="1" max="1000000">
         <button class="place-bet-btn" id="placeBetBtn" onclick="placeSpectatorBet()">PLACE BET</button>
         <div id="betStatus" style="font-size:9px;text-align:center;color:#888;margin-top:5px;">No active bet</div>
       </div>
-      <div class="betting-overlay" id="betOverlay">WAITING FOR<br>2 PLAYERS...</div>
+      <div class="betting-overlay" id="betOverlay">WAITING FOR<br>DUEL ACCEPT...</div>
     </div>
 
     <div class="sidebar-panel player-list-container">
@@ -335,7 +535,6 @@
         <div style="font-size:8px;color:#aaa" id="micStatusText">MIC OFF</div>
       </div>
 
-      <!-- CHANGED: empty list, filled by realtime presence -->
       <div class="player-list custom-scroll" id="playerList"></div>
 
       <div class="mic-controls">
@@ -347,7 +546,6 @@
     <div class="sidebar-panel chat-container-box">
       <div class="panel-header">LIVE CHAT</div>
       <div class="chat-inner">
-        <!-- CHANGED: empty log -->
         <div class="chat-log custom-scroll" id="chatLog"></div>
         <div class="chat-input-area">
           <input type="text" class="chat-input" placeholder="Type here..." onkeypress="handleChat(event)">
@@ -357,69 +555,251 @@
   </div>
 </div>
 
+<!-- Proposal modal -->
+<div class="modal" id="proposalModal">
+  <div class="modalInner">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="color:#feca57;font-size:12px">MATCH PROPOSAL</div>
+      <button class="btn gray" onclick="closeProposal()">CLOSE</button>
+    </div>
+    <div class="modalText" id="proposalText"></div>
+    <div class="modalBtns" id="proposalBtns">
+      <button class="btn green" style="flex:1" onclick="respondProposal(true)">ACCEPT</button>
+      <button class="btn red" style="flex:1" onclick="respondProposal(false)">DECLINE</button>
+    </div>
+  </div>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  // --- Auth gate ---
+  // ---------------- Auth / Nav ----------------
   let ME = null;
   async function mustAuth(){
-    const me = await fetch('/api/me').then(r=>r.json());
-    if(!me.authed) { location.href='/login.html'; return; }
+    const me = await fetch('/api/credits').then(r=>r.json()).catch(()=>({}));
+    if(!me.ok){ location.href='/login.html'; return; }
     ME = me;
+    document.getElementById('meName').innerText = me.username;
+    document.getElementById('meCredits').innerText = me.credits;
+    document.getElementById('walletDisplay').innerText = `WALLET: ${me.credits} TC`;
     if(me.isAdmin) document.getElementById('adminBtn').style.display='inline-block';
+  }
+  async function reloadCredits(){
+    const me = await fetch('/api/credits').then(r=>r.json()).catch(()=>null);
+    if(!me || !me.ok) return;
+    ME = me;
+    document.getElementById('meCredits').innerText = me.credits;
+    document.getElementById('walletDisplay').innerText = `WALLET: ${me.credits} TC`;
   }
   function goAdmin(){ location.href='/admin.html'; }
   function goSupport(){ location.href='/support.html'; }
   async function logout(){ await fetch('/api/logout',{method:'POST'}); location.href='/login.html'; }
 
-  // --- Socket realtime ---
+  // ---------------- Socket / State ----------------
   const socket = io();
+  let currentState = null;
 
-  const onlineSpeaking = new Map(); // username -> boolean
-
-  function renderPlayers(list){
-    const el = document.getElementById('playerList');
-    el.innerHTML = '';
-    list.forEach(p=>{
-      const item = document.createElement('div');
-      item.className='player-item';
-      const name = document.createElement('div');
-      name.className='player-name';
-      name.textContent = p.username;
-      const mic = document.createElement('i');
-      mic.className='fas fa-microphone voice-icon';
-      if(onlineSpeaking.get(p.username)) mic.classList.add('speaking');
-      item.appendChild(name);
-      item.appendChild(mic);
-      el.appendChild(item);
-    });
-  }
-
-  function addChat({user,text}){
-    const log = document.getElementById('chatLog');
-    const div = document.createElement('div');
-    div.className='chat-msg';
-    div.innerHTML = `<span class="chat-user" style="color:#feca57">${escapeHtml(user)}:</span> <span class="chat-text">${escapeHtml(text)}</span>`;
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
-  }
+  const DOM = {
+    p1Panel: document.getElementById('p1Panel'),
+    p2Panel: document.getElementById('p2Panel'),
+    p1Ctrls: document.getElementById('p1Controls'),
+    p2Ctrls: document.getElementById('p2Controls'),
+    p1Score: document.getElementById('p1Score'),
+    p2Score: document.getElementById('p2Score'),
+    status: document.getElementById('status'),
+    visuals: document.getElementById('gameVisuals'),
+    round: document.getElementById('roundTracker'),
+    potLine: document.getElementById('potLine'),
+    potAmount: document.getElementById('potAmount'),
+    betOverlay: document.getElementById('betOverlay'),
+    p1Name: document.getElementById('p1Name'),
+    p2Name: document.getElementById('p2Name'),
+    p1Avatar: document.getElementById('p1Avatar'),
+    p2Avatar: document.getElementById('p2Avatar'),
+    chatLog: document.getElementById('chatLog'),
+    playerList: document.getElementById('playerList'),
+    emotePop: document.getElementById('emotePop')
+  };
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
-  socket.on('presence', (list) => {
-    // list = [{username}]
-    renderPlayers(list);
-  });
-  socket.on('chat', (m) => addChat(m));
-  socket.on('speaking', ({user, speaking}) => {
-    onlineSpeaking.set(user, speaking);
-    // re-render without losing scroll
-    const list = Array.from(document.querySelectorAll('#playerList .player-name')).map(n=>({username:n.textContent}));
-    renderPlayers(list);
+  function roundsLabel(k){
+    return ({
+      sd1:"1 ROUND (SUDDEN DEATH)",
+      bo3:"BEST OF 3 (FIRST TO 2)",
+      bo5:"BEST OF 5 (FIRST TO 3)",
+      rt3:"RACE TO 3",
+      rt5:"RACE TO 5"
+    })[k] || k;
+  }
+
+  function roundsTarget(k){
+    return ({
+      sd1: 1,
+      bo3: 2,
+      bo5: 3,
+      rt3: 3,
+      rt5: 5
+    })[k] || 1;
+  }
+
+  function avatarClass(a){
+    const map = { avatar1:'a1', avatar2:'a2', avatar3:'a3', avatar4:'a4', avatar5:'a5', avatar6:'a6' };
+    return map[a] || 'a1';
+  }
+
+  function setAvatar(el, avatar){
+    el.className = 'avatar ' + avatarClass(avatar);
+    el.textContent = ' ';
+  }
+
+  function updateStatus(msg){ DOM.status.innerText = msg; }
+
+  socket.on('state', (s) => {
+    currentState = s;
+
+    // seats display
+    DOM.p1Name.innerText = s.room.seat1 ? s.room.seat1 : "EMPTY";
+    DOM.p2Name.innerText = s.room.seat2 ? s.room.seat2 : "EMPTY";
+
+    // seat avatars (from players list)
+    const p1 = s.players.find(p => p.username === s.room.seat1);
+    const p2 = s.players.find(p => p.username === s.room.seat2);
+    setAvatar(DOM.p1Avatar, p1?.avatar || "avatar1");
+    setAvatar(DOM.p2Avatar, p2?.avatar || "avatar1");
+
+    // pot
+    if (s.room.pot > 0) {
+      DOM.potLine.style.display = 'flex';
+      DOM.potAmount.innerText = s.room.pot;
+    } else {
+      DOM.potLine.style.display = 'none';
+    }
+
+    // betting overlay: only after duel accepted/locked
+    DOM.betOverlay.style.display = s.room.settingsLocked ? 'none' : 'flex';
+
+    // game tabs lock: only seat1 can pick BEFORE lock
+    const iAmSeat1 = (ME && s.room.seat1 === ME.username);
+    document.querySelectorAll('.game-tab').forEach(t => {
+      t.classList.toggle('locked', !iAmSeat1 || s.room.settingsLocked);
+    });
+
+    // build controls
+    renderSeatControls();
+
+    // players online list
+    renderPlayers(s.players);
   });
 
-  // --- Voice: mic lights ONLY when audio detected ---
+  socket.on('chat', (m) => addChat(m));
+
+  socket.on('proposal:incoming', ({ to, proposal }) => {
+    if (!ME || ME.username !== to) return;
+    openProposal(proposal);
+  });
+
+  socket.on('proposal:error', (e) => {
+    alert(e?.error || "Proposal failed");
+  });
+
+  socket.on('proposal:result', async (r) => {
+    if (!r.ok && r.error) alert(r.error);
+    await reloadCredits();
+
+    if (r.ok && r.accepted && r.proposal) {
+      // start match with chosen settings
+      state.game = r.proposal.game;
+      state.targetScore = roundsTarget(r.proposal.roundsKey);
+      state.roundsKey = r.proposal.roundsKey;
+      resetMatch();
+      setGame(state.game, true);
+      updateStatus(`DUEL ACCEPTED: ${r.proposal.game.toUpperCase()} | ${roundsLabel(r.proposal.roundsKey)} | BET ${r.proposal.bet} EACH`);
+    } else if (r.ok && r.accepted === false) {
+      updateStatus("PROPOSAL DECLINED.");
+    }
+  });
+
+  socket.on('duel:emote', ({ from, emote }) => {
+    // show pop only if duel is active
+    if (!currentState?.room?.settingsLocked) return;
+    DOM.emotePop.textContent = emote;
+    DOM.emotePop.classList.add('show');
+    setTimeout(()=>DOM.emotePop.classList.remove('show'), 700);
+    addChat({ user: "SYSTEM", text: `${from} used an emote ${emote}` });
+  });
+
+  // hello
+  async function connectHello(){
+    socket.emit('hello', { username: ME.username });
+  }
+
+  // ---------------- Players list (clickable) ----------------
+  async function onPlayerClick(p){
+    // show credits only for YOU (player side). Admin sees in admin panel.
+    if (ME && p.username === ME.username) {
+      alert(`YOUR CREDITS: ${ME.credits} TC\nAVATAR: ${ME.avatar}`);
+    } else {
+      alert(`PLAYER: ${p.username}\n(Credits hidden on player side)`);
+    }
+  }
+
+  function renderPlayers(list){
+    DOM.playerList.innerHTML = '';
+    list.forEach(p=>{
+      const item = document.createElement('div');
+      item.className='player-item';
+      item.onclick = ()=>onPlayerClick(p);
+
+      const left = document.createElement('div');
+      left.className='player-name';
+
+      const av = document.createElement('div');
+      av.className = 'avatar ' + avatarClass(p.avatar);
+      av.textContent = ' ';
+      left.appendChild(av);
+
+      const nm = document.createElement('div');
+      nm.textContent = p.username;
+      left.appendChild(nm);
+
+      if (p.seat === 1 || p.seat === 2) {
+        const tag = document.createElement('div');
+        tag.className = 'seatTag';
+        tag.textContent = `SEAT ${p.seat}`;
+        left.appendChild(tag);
+      }
+
+      const mic = document.createElement('i');
+      mic.className='fas fa-microphone voice-icon';
+      if(p.speaking) mic.classList.add('speaking');
+
+      item.appendChild(left);
+      item.appendChild(mic);
+      DOM.playerList.appendChild(item);
+    });
+  }
+
+  // ---------------- Chat ----------------
+  function addChat({user,text}){
+    const div = document.createElement('div');
+    div.className='chat-msg';
+    div.innerHTML = `<span class="chat-user" style="color:#feca57">${escapeHtml(user)}:</span> <span class="chat-text">${escapeHtml(text)}</span>`;
+    DOM.chatLog.appendChild(div);
+    DOM.chatLog.scrollTop = DOM.chatLog.scrollHeight;
+  }
+
+  function handleChat(e){
+    if(e.key==='Enter'){
+      const txt = e.target.value;
+      if(!txt.trim()) return;
+      socket.emit('chat', txt.trim());
+      e.target.value='';
+    }
+  }
+
+  // ---------------- Voice (accurate RMS + hold) ----------------
   const voice = { mode:'ptt', isTalking:false, stream:null, audioContext:null, analyser:null, raf:0, lastSpeaking:false };
 
   async function initAudio(){
@@ -429,7 +809,7 @@
     voice.analyser = voice.audioContext.createAnalyser();
     const source = voice.audioContext.createMediaStreamSource(voice.stream);
     source.connect(voice.analyser);
-    voice.analyser.fftSize = 512;
+    voice.analyser.fftSize = 1024;
   }
 
   function stopAudio(){
@@ -444,24 +824,48 @@
   }
 
   function visualizeMic(){
-    const data = new Uint8Array(voice.analyser.frequencyBinCount);
+    const data = new Uint8Array(voice.analyser.fftSize);
+    let hold = 0;
+
     const loop = () => {
       if(!voice.isTalking) return;
-      voice.analyser.getByteFrequencyData(data);
-      let sum = 0;
-      for(let i=0;i<data.length;i++) sum += data[i];
-      const avg = sum / data.length;
 
-      // threshold: tweak if needed
-      const speaking = avg > 18;
+      voice.analyser.getByteTimeDomainData(data);
+
+      let sum = 0;
+      for (let i=0;i<data.length;i++){
+        const v = (data[i] - 128) / 128;
+        sum += v*v;
+      }
+      const rms = Math.sqrt(sum / data.length);
+
+      const speakingNow = rms > 0.04;
+      if (speakingNow) hold = 7;
+      else hold = Math.max(0, hold - 1);
+
+      const speaking = hold > 0;
 
       if(speaking !== voice.lastSpeaking){
         voice.lastSpeaking = speaking;
         socket.emit('speaking', speaking);
       }
+
       voice.raf = requestAnimationFrame(loop);
     };
     loop();
+  }
+
+  async function startTalk(){
+    await initAudio();
+    voice.isTalking = true;
+    document.getElementById('micStatusText').innerText = "MIC ACTIVE";
+    document.getElementById('micStatusText').style.color = "#2ecc71";
+    visualizeMic();
+  }
+
+  function stopTalk(){
+    if(voice.mode !== 'ptt') return;
+    stopAudio();
   }
 
   function toggleMicMode(){
@@ -474,22 +878,8 @@
       voice.mode='ptt';
       document.getElementById('micModeBtn').innerText="MODE: PUSH-TO-TALK";
       document.getElementById('micActiveBtn').style.display='block';
-      stopTalk();
+      stopAudio();
     }
-  }
-
-  async function startTalk(){
-    if(voice.mode !== 'ptt' && voice.mode !== 'open') return;
-    await initAudio();
-    voice.isTalking = true;
-    document.getElementById('micStatusText').innerText = "MIC ACTIVE";
-    document.getElementById('micStatusText').style.color = "#2ecc71";
-    visualizeMic();
-  }
-
-  function stopTalk(){
-    if(voice.mode !== 'ptt') return;
-    stopAudio();
   }
 
   document.addEventListener('keydown', (e) => {
@@ -505,132 +895,305 @@
     }
   });
 
-  // --- Chat send (socket) ---
-  function handleChat(e){
-    if(e.key==='Enter'){
-      const txt = e.target.value;
-      if(!txt.trim()) return;
-      socket.emit('chat', txt.trim());
-      e.target.value='';
+  // ---------------- Duel proposal modal ----------------
+  function openProposal(p){
+    document.getElementById('proposalText').innerHTML =
+      `<b>GAME:</b> ${escapeHtml(p.game.toUpperCase())}<br>
+       <b>ROUNDS:</b> ${escapeHtml(roundsLabel(p.roundsKey))}<br>
+       <b>BET:</b> ${p.bet} TC (EACH)<br>
+       <b>POT:</b> ${p.bet * 2} TC`;
+    document.getElementById('proposalModal').style.display='flex';
+  }
+  function closeProposal(){
+    document.getElementById('proposalModal').style.display='none';
+  }
+  function respondProposal(accept){
+    closeProposal();
+    socket.emit('proposal:respond', { accept: !!accept });
+  }
+
+  // ---------------- Seat / Avatar / Emotes controls ----------------
+  function takeSeat(seat){ socket.emit('takeSeat', { seat }); }
+  function leaveSeat(){ socket.emit('leaveSeat'); }
+
+  async function setMyAvatar(avatar){
+    const r = await fetch('/api/avatar', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ avatar })
+    });
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok){ alert(j.error || 'Failed'); return; }
+    await reloadCredits();
+    // server presence will update on reconnect; easiest: refresh presence
+    socket.emit('hello', { username: ME.username });
+  }
+
+  function sendEmote(emote){
+    socket.emit('duel:emote', { emote });
+  }
+
+  function renderSeatControls(){
+    const s = currentState?.room;
+    if (!s || !ME) return;
+
+    const iAmSeat1 = s.seat1 === ME.username;
+    const iAmSeat2 = s.seat2 === ME.username;
+    const locked = !!s.settingsLocked;
+
+    // --- Seat 1 controls
+    DOM.p1Ctrls.innerHTML = '';
+    if (!s.seat1) {
+      DOM.p1Ctrls.innerHTML = `<button class="seat-btn" onclick="takeSeat(1)">TAKE SEAT 1</button>`;
+    } else if (iAmSeat1) {
+      DOM.p1Ctrls.appendChild(seatedPanel(1, locked, true));
+    } else {
+      DOM.p1Ctrls.innerHTML = `<div style="color:#aaa;font-size:10px;text-align:center;padding:10px">SEATED</div>`;
+    }
+
+    // --- Seat 2 controls
+    DOM.p2Ctrls.innerHTML = '';
+    if (!s.seat2) {
+      DOM.p2Ctrls.innerHTML = `<button class="seat-btn" onclick="takeSeat(2)">TAKE SEAT 2</button>`;
+    } else if (iAmSeat2) {
+      DOM.p2Ctrls.appendChild(seatedPanel(2, locked, false));
+    } else {
+      DOM.p2Ctrls.innerHTML = `<div style="color:#aaa;font-size:10px;text-align:center;padding:10px">SEATED</div>`;
     }
   }
 
-  // --- Game state (your logic, with key changes only) ---
+  function seatedPanel(seatNum, locked, isProposer){
+    const wrap = document.createElement('div');
+
+    // leave button
+    const g0 = document.createElement('div');
+    g0.className = 'group';
+    g0.innerHTML = `<div class="group-title">SEAT ACTIONS</div>`;
+    const leaveBtn = document.createElement('button');
+    leaveBtn.className = 'arcade-btn';
+    leaveBtn.textContent = 'LEAVE SEAT';
+    leaveBtn.onclick = ()=>leaveSeat();
+    g0.appendChild(leaveBtn);
+    wrap.appendChild(g0);
+
+    // avatar picker
+    const g1 = document.createElement('div');
+    g1.className = 'group';
+    g1.innerHTML = `<div class="group-title">AVATAR</div>`;
+    const sel = document.createElement('select');
+    sel.innerHTML = `
+      <option value="avatar1">AVATAR 1</option>
+      <option value="avatar2">AVATAR 2</option>
+      <option value="avatar3">AVATAR 3</option>
+      <option value="avatar4">AVATAR 4</option>
+      <option value="avatar5">AVATAR 5</option>
+      <option value="avatar6">AVATAR 6</option>
+    `;
+    sel.value = ME.avatar || "avatar1";
+    sel.onchange = ()=>setMyAvatar(sel.value);
+    g1.appendChild(sel);
+    wrap.appendChild(g1);
+
+    // Emotes (only duel players, only when locked)
+    const gE = document.createElement('div');
+    gE.className = 'group';
+    gE.innerHTML = `<div class="group-title">DUEL EMOTES</div>`;
+    const emWrap = document.createElement('div');
+    emWrap.style.display='flex';
+    emWrap.style.gap='8px';
+    emWrap.style.flexWrap='wrap';
+
+    ["😈","😂","🔥","💀","😤","😎"].forEach(e=>{
+      const b = document.createElement('button');
+      b.className = 'arcade-btn';
+      b.style.width='auto';
+      b.style.padding='10px 10px';
+      b.textContent = e;
+      b.disabled = !locked;
+      b.onclick = ()=>sendEmote(e);
+      emWrap.appendChild(b);
+    });
+
+    gE.appendChild(emWrap);
+    wrap.appendChild(gE);
+
+    // Proposal (seat1 only, only when both seats filled and NOT locked)
+    if (isProposer) {
+      const g2 = document.createElement('div');
+      g2.className = 'group';
+      g2.innerHTML = `<div class="group-title">MATCH SETTINGS (YOU PROPOSE)</div>`;
+
+      const roundSel = document.createElement('select');
+      roundSel.innerHTML = `
+        <option value="sd1">1 ROUND (SUDDEN DEATH)</option>
+        <option value="bo3">BEST OF 3 (FIRST TO 2)</option>
+        <option value="bo5">BEST OF 5 (FIRST TO 3)</option>
+        <option value="rt3">RACE TO 3</option>
+        <option value="rt5">RACE TO 5</option>
+      `;
+      roundSel.value = state.roundsKey || 'sd1';
+
+      const betInput = document.createElement('input');
+      betInput.className = 'bet-input';
+      betInput.placeholder = "BET AMOUNT";
+      betInput.type = "number";
+      betInput.min = "1";
+      betInput.value = String(state.proposedBet || 10);
+
+      betInput.style.margin = "0";
+      betInput.style.height = "48px";
+
+      const proposeBtn = document.createElement('button');
+      proposeBtn.className = 'arcade-btn p1';
+      proposeBtn.textContent = "PROPOSE MATCH";
+      proposeBtn.disabled = locked || !(currentState.room.seat1 && currentState.room.seat2);
+
+      proposeBtn.onclick = ()=>{
+        state.roundsKey = roundSel.value;
+        state.proposedBet = parseInt(betInput.value,10) || 1;
+        socket.emit('proposal:create', { game: state.game || 'dice', roundsKey: state.roundsKey, bet: state.proposedBet });
+      };
+
+      // disable if not ready
+      roundSel.disabled = locked || !(currentState.room.seat1 && currentState.room.seat2);
+      betInput.disabled = locked || !(currentState.room.seat1 && currentState.room.seat2);
+
+      g2.appendChild(roundSel);
+      g2.appendChild(betInput);
+      g2.appendChild(proposeBtn);
+      wrap.appendChild(g2);
+    } else {
+      const g3 = document.createElement('div');
+      g3.className = 'group';
+      g3.innerHTML = `<div class="group-title">MATCH SETTINGS</div>
+        <div style="font-size:12px;color:#bbb;font-family:Rajdhani,sans-serif;line-height:1.6">
+          Waiting for Seat 1 proposal.<br>
+          You will receive an ACCEPT / DECLINE pop-up.
+        </div>`;
+      wrap.appendChild(g3);
+    }
+
+    return wrap;
+  }
+
+  // ---------------- Game selection (seat1 only before lock) ----------------
+  function tabPick(type){
+    const s = currentState?.room;
+    if (!s || !ME) return;
+    if (s.settingsLocked) return;
+    if (s.seat1 !== ME.username) return; // only seat1 can pick pre-lock
+    setGame(type, false);
+  }
+
+  // ---------------- Match state & Game (dice implemented; others are placeholders) ----------------
   const state = {
-    game:null, turn:1, p1Score:0, p2Score:0, targetScore:1,
-    tempData:{}, isGameOver:false, isBusy:false, coinRot:0,
-    seats:{ p1:false, p2:false }
+    game: 'dice',
+    roundsKey: 'sd1',
+    proposedBet: 10,
+    turn: 1,
+    p1Score: 0,
+    p2Score: 0,
+    targetScore: 1,
+    isGameOver: false,
+    isBusy: false,
+    tempData: {}
   };
-  const spec = { money:1000, betOn:null, betAmount:0, locked:false };
-
-  const DOM = {
-    p1Panel: document.getElementById('p1Panel'), p2Panel: document.getElementById('p2Panel'),
-    p1Ctrls: document.getElementById('p1Controls'), p2Ctrls: document.getElementById('p2Controls'),
-    p1Score: document.getElementById('p1Score'), p2Score: document.getElementById('p2Score'),
-    status: document.getElementById('status'), visuals: document.getElementById('gameVisuals'),
-    target: document.getElementById('targetDisplay'), round: document.getElementById('roundTracker'),
-    wallet: document.getElementById('walletDisplay'), betStatus: document.getElementById('betStatus'),
-    placeBtn: document.getElementById('placeBetBtn'), betInput: document.getElementById('betAmount'),
-    betOverlay: document.getElementById('betOverlay'),
-    p1Name: document.getElementById('p1Name'), p2Name: document.getElementById('p2Name')
-  };
-
-  function updateStatus(msg){ DOM.status.innerText = msg; }
-
-  function toggleSeat(player){
-    if(state.isBusy) return;
-    if(player===1){
-      state.seats.p1=true;
-      DOM.p1Name.innerText="PLAYER 1";
-      DOM.p1Ctrls.innerHTML='<div style="font-size:10px;color:#666;">WAITING...</div>';
-    } else {
-      state.seats.p2=true;
-      DOM.p2Name.innerText="PLAYER 2";
-      DOM.p2Ctrls.innerHTML='<div style="font-size:10px;color:#666;">WAITING...</div>';
-    }
-    checkReady();
-  }
-
-  function clearSeats(){
-    state.seats.p1=false; state.seats.p2=false;
-    DOM.p1Name.innerText="EMPTY";
-    DOM.p2Name.innerText="EMPTY";
-    DOM.p1Ctrls.innerHTML='<button class="seat-btn" onclick="toggleSeat(1)">TAKE SEAT</button>';
-    DOM.p2Ctrls.innerHTML='<button class="seat-btn" onclick="toggleSeat(2)">TAKE SEAT</button>';
-    DOM.betOverlay.style.display="flex";
-    updateStatus("WAITING FOR PLAYERS...");
-    DOM.round.innerHTML = `ROUND <span>1</span>`;
-    DOM.visuals.innerHTML = '<div class="vs-badge">VS</div>';
-  }
-
-  function checkReady(){
-    if(state.seats.p1 && state.seats.p2){
-      DOM.betOverlay.style.display="none";
-      resetMatch();
-    } else {
-      updateStatus("WAITING FOR PLAYERS...");
-    }
-  }
 
   function resetMatch(){
-    if(!state.seats.p1 || !state.seats.p2) return;
-    state.p1Score=0; state.p2Score=0; state.turn=1; state.isGameOver=false; state.isBusy=false; state.tempData={}; state.coinRot=0;
-    state.targetScore=parseInt(document.getElementById('roundMode').value,10);
-    DOM.target.innerText=`TARGET: ${state.targetScore}`;
+    state.p1Score = 0;
+    state.p2Score = 0;
+    state.turn = 1;
+    state.isGameOver = false;
+    state.isBusy = false;
+    state.tempData = {};
     updateUI();
-    setGame(state.game || 'dice');
   }
 
   function updateUI(){
-    DOM.p1Score.innerText=state.p1Score;
-    DOM.p2Score.innerText=state.p2Score;
-    DOM.round.innerHTML=`ROUND <span>${state.p1Score+state.p2Score+1}</span>`;
-    document.getElementById('p1MatchPoint').style.display=(state.p1Score===state.targetScore-1)?'block':'none';
-    document.getElementById('p2MatchPoint').style.display=(state.p2Score===state.targetScore-1)?'block':'none';
+    DOM.p1Score.innerText = state.p1Score;
+    DOM.p2Score.innerText = state.p2Score;
+    DOM.round.innerHTML = `ROUND <span>${state.p1Score + state.p2Score + 1}</span>`;
+
+    document.getElementById('p1MatchPoint').style.display = (state.p1Score === state.targetScore - 1 && state.targetScore > 1) ? 'block' : 'none';
+    document.getElementById('p2MatchPoint').style.display = (state.p2Score === state.targetScore - 1 && state.targetScore > 1) ? 'block' : 'none';
   }
 
   function setBusy(b){
-    state.isBusy=b;
-    document.querySelectorAll('.game-tab').forEach(t=>t.classList.toggle('disabled', b));
+    state.isBusy = b;
+    document.querySelectorAll('.game-tab').forEach(t=>{
+      t.classList.toggle('disabled', b);
+    });
   }
 
-  function toggleButtons(p, en){
-    const c = p===1 ? DOM.p1Ctrls : DOM.p2Ctrls;
-    c.querySelectorAll('button').forEach(btn=>btn.disabled = !en);
+  function setGame(type, fromAccept){
+    state.game = type;
+
+    document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
+    const tab = document.getElementById(`tab-${type}`);
+    if (tab) tab.classList.add('active');
+
+    // visuals reset
+    DOM.visuals.innerHTML = `<div class="vs-badge">VS</div><div class="emote-pop" id="emotePop">🔥</div>`;
+    DOM.emotePop = document.getElementById('emotePop');
+
+    // only allow gameplay once locked
+    const locked = !!currentState?.room?.settingsLocked;
+    if (!locked) {
+      updateStatus("WAITING FOR DUEL ACCEPT...");
+      return;
+    }
+
+    if (type === 'dice') setupDice();
+    else {
+      DOM.visuals.innerHTML += `
+        <div style="z-index:10;text-align:center;background:#000;padding:16px;border:2px solid #333">
+          <div style="color:#feca57;font-size:10px;margin-bottom:10px">${type.toUpperCase()}</div>
+          <div style="color:#aaa;font-size:10px;line-height:1.6">
+            (Placeholder)<br>
+            Dice is fully playable.<br>
+            Add your other game logic next.
+          </div>
+        </div>
+      `;
+    }
+
+    updateTurn(1);
+    if (fromAccept) {
+      updateStatus(`${type.toUpperCase()} STARTED. PLAYER 1 TURN.`);
+    }
   }
 
   function updateTurn(p){
-    if(state.isGameOver){ toggleButtons(1,false); toggleButtons(2,false); return; }
-    state.turn=p;
-    if(p===1){
-      DOM.p1Panel.classList.add('active-turn'); DOM.p2Panel.classList.remove('active-turn');
-      toggleButtons(1,true); toggleButtons(2,false);
+    if(state.isGameOver) return;
+    state.turn = p;
+    if (p === 1) {
+      DOM.p1Panel.classList.add('active-turn');
+      DOM.p2Panel.classList.remove('active-turn');
     } else {
-      DOM.p1Panel.classList.remove('active-turn'); DOM.p2Panel.classList.add('active-turn');
-      toggleButtons(1,false); toggleButtons(2,true);
+      DOM.p1Panel.classList.remove('active-turn');
+      DOM.p2Panel.classList.add('active-turn');
     }
   }
 
   function awardPoint(p){
-    if(state.isGameOver) return;
-    if(p===1) state.p1Score++; else state.p2Score++;
+    if (state.isGameOver) return;
+    if (p === 1) state.p1Score++; else state.p2Score++;
     updateUI();
-    setTimeout(checkMatchWin, 300);
+    checkMatchWin();
   }
 
   function checkMatchWin(){
-    if(state.p1Score>=state.targetScore) endGame(1);
-    else if(state.p2Score>=state.targetScore) endGame(2);
+    if (state.p1Score >= state.targetScore) endGame(1);
+    else if (state.p2Score >= state.targetScore) endGame(2);
   }
 
-  // IMPORTANT CHANGE: remove PLAY AGAIN and auto-clear seats
   function endGame(winner){
-    state.isGameOver=true;
+    state.isGameOver = true;
     setBusy(false);
-    toggleButtons(1,false); toggleButtons(2,false);
-    DOM.p1Panel.classList.remove('active-turn'); DOM.p2Panel.classList.remove('active-turn');
+    DOM.p1Panel.classList.remove('active-turn');
+    DOM.p2Panel.classList.remove('active-turn');
 
-    DOM.round.innerHTML="MATCH OVER";
+    DOM.round.innerHTML = `MATCH OVER`;
     DOM.visuals.innerHTML = `
       <div style="text-align:center;z-index:10;background:#000;padding:18px;border:2px solid #333">
         <div style="color:var(--accent);margin-bottom:10px;font-size:10px">MATCH COMPLETE</div>
@@ -644,135 +1207,107 @@
     `;
     updateStatus("WINNER DECLARED!");
 
-    // clear seats after short delay
-    setTimeout(() => {
-      clearSeats();
-      // also reset betting UI for next match
-      spec.locked=false; spec.betOn=null; spec.betAmount=0;
-      DOM.placeBtn.disabled=false;
-      DOM.betInput.disabled=false;
-      DOM.betInput.value='';
-      document.getElementById('betP1Btn').disabled=false;
-      document.getElementById('betP2Btn').disabled=false;
-      document.getElementById('betP1Btn').classList.remove('selected');
-      document.getElementById('betP2Btn').classList.remove('selected');
-      DOM.betStatus.innerText="No active bet";
-      DOM.betStatus.style.color="#888";
+    // clear seats on server (clears UI too)
+    setTimeout(()=>{
+      socket.emit('match:ended');
+      // refresh credits (since pot logic is server-side later when you add payout rules)
+      reloadCredits();
     }, 2500);
   }
 
-  // ---- spectator betting (same behavior as your mock) ----
+  // -------- Dice (playable) --------
+  function createDie(v){
+    return `<div class="die" v="${v}">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>`;
+  }
+  function renderDice(id, arr){
+    const el = document.getElementById(id);
+    el.innerHTML = arr.map(createDie).join('');
+  }
+  function r6(){ return Math.ceil(Math.random()*6); }
+
+  function setupDice(){
+    DOM.visuals.innerHTML += `
+      <div style="display:flex;flex-direction:column;gap:30px;align-items:center;z-index:2">
+        <div id="p1Dice" class="dice-row" style="opacity:0.8"></div>
+        <div id="p2Dice" class="dice-row" style="opacity:0.8"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <button class="btn red" onclick="rollDice(1)">P1 ROLL</button>
+          <button class="btn" style="background:var(--p2-color);color:#fff" onclick="rollDice(2)">P2 ROLL</button>
+        </div>
+      </div>
+    `;
+    renderDice('p1Dice',[1,1,1]);
+    renderDice('p2Dice',[1,1,1]);
+    updateStatus("DICE READY. PLAYER 1 TURN.");
+  }
+
+  function rollDice(p){
+    if (state.isGameOver || state.isBusy) return;
+    if (state.turn !== p) return;
+    if (!currentState?.room?.settingsLocked) return;
+
+    setBusy(true);
+
+    const r=[r6(),r6(),r6()];
+    const t=r.reduce((a,b)=>a+b,0);
+    const rowId = p===1 ? 'p1Dice' : 'p2Dice';
+    renderDice(rowId, r);
+
+    if (p===1) {
+      state.tempData.p1Roll = t;
+      updateStatus(`P1 ROLLED ${t}. P2 TURN.`);
+      state.turn = 2;
+      updateTurn(2);
+      setBusy(false);
+    } else {
+      const p1 = state.tempData.p1Roll;
+      updateStatus(`P1: ${p1} VS P2: ${t}`);
+      setTimeout(()=>{
+        if (p1 > t) { updateStatus("P1 WINS ROUND!"); awardPoint(1); }
+        else if (t > p1) { updateStatus("P2 WINS ROUND!"); awardPoint(2); }
+        else { updateStatus("DRAW! ROLL AGAIN."); }
+        state.turn = 1;
+        updateTurn(1);
+        setBusy(false);
+      }, 650);
+    }
+  }
+
+  // ---------------- Spectator betting (client demo only; keep or remove) ----------------
+  const spec = { betOn:null, betAmount:0, locked:false };
+
   function selectBet(player){
     if(spec.locked) return;
     spec.betOn = player;
     document.getElementById('betP1Btn').classList.toggle('selected', player===1);
     document.getElementById('betP2Btn').classList.toggle('selected', player===2);
   }
+
   function placeSpectatorBet(){
-    const amt = parseInt(DOM.betInput.value,10);
+    const amt = parseInt(document.getElementById('betAmount').value,10);
     if(!spec.betOn) return alert("Select a Player first!");
     if(!Number.isFinite(amt) || amt<=0) return alert("Invalid amount");
-    if(amt>spec.money) return alert("Insufficient funds");
-    spec.betAmount=amt; spec.money-=amt; spec.locked=true;
-    DOM.wallet.innerText=`WALLET: ${spec.money} TC`;
-    DOM.betStatus.innerText=`LOCKED: ${amt} TC on P${spec.betOn}`;
-    DOM.betStatus.style.color= spec.betOn===1 ? 'var(--p1-color)' : 'var(--p2-color)';
-    DOM.placeBtn.disabled=true;
-    DOM.betInput.disabled=true;
-    document.getElementById('betP1Btn').disabled=true;
-    document.getElementById('betP2Btn').disabled=true;
+    if(amt > (ME?.credits || 0)) return alert("Insufficient funds");
+
+    spec.betAmount = amt;
+    spec.locked = true;
+
+    document.getElementById('betStatus').innerText = `LOCKED: ${amt} TC on P${spec.betOn}`;
+    document.getElementById('placeBetBtn').disabled = true;
+    document.getElementById('betAmount').disabled = true;
+    document.getElementById('betP1Btn').disabled = true;
+    document.getElementById('betP2Btn').disabled = true;
   }
 
-  // ---- game tabs (keep your implementations; dice included for demo) ----
-  function setGame(type){
-    if(state.isGameOver || state.isBusy) return;
-    if(!state.seats.p1 || !state.seats.p2) return;
-
-    state.game=type; state.tempData={};
-    document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById(`tab-${type}`).classList.add('active');
-    DOM.visuals.innerHTML='<div class="vs-badge">VS</div>';
-    DOM.p1Ctrls.innerHTML=''; DOM.p2Ctrls.innerHTML='';
-
-    if(type==='dice') setupDice();
-    // keep your other games here if you want (coin/hl/roulette/rps/ttt)
-    updateStatus(`${type.toUpperCase()} STARTED. PLAYER 1'S TURN.`);
-    updateTurn(1);
-  }
-
-  function createBtn(p, txt, fn){
-    const b=document.createElement('button');
-    b.className=`arcade-btn p${p}-btn`;
-    b.innerText=txt;
-    b.onclick=fn;
-    if(p===1) DOM.p1Ctrls.appendChild(b); else DOM.p2Ctrls.appendChild(b);
-  }
-
-  // DICE (same as your mock)
-  function setupDice(){
-    createBtn(1,"ROLL",()=>runDice(1));
-    createBtn(2,"ROLL",()=>runDice(2));
-    DOM.visuals.innerHTML += `
-      <div style="display:flex;flex-direction:column;gap:30px;align-items:center;">
-        <div id="p1Dice" class="dice-row" style="opacity:0.5"></div>
-        <div id="p2Dice" class="dice-row" style="opacity:0.5"></div>
-      </div>`;
-    renderDice('p1Dice',[1,1,1]);
-    renderDice('p2Dice',[1,1,1]);
-  }
-  function renderDice(id,v){
-    const el=document.getElementById(id); el.innerHTML='';
-    v.forEach(x=>{
-      el.innerHTML += `<div class="die" v="${x}">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      </div>`;
-    });
-  }
-  function r6(){ return Math.ceil(Math.random()*6); }
-
-  function runDice(p){
-    setBusy(true); toggleButtons(p,false);
-    const r=[r6(),r6(),r6()];
-    const t=r.reduce((a,b)=>a+b,0);
-    const row=document.getElementById(p===1?'p1Dice':'p2Dice');
-    row.childNodes.forEach(d=>d.classList.add('shaking'));
-
-    setTimeout(()=>{
-      row.childNodes.forEach(d=>d.classList.remove('shaking'));
-      if(p===1){
-        state.tempData.p1Roll=t;
-        renderDice('p1Dice',r);
-        row.style.opacity=1;
-        updateStatus(`P1 ROLLED ${t}. P2 TURN.`);
-        setBusy(false);
-        updateTurn(2);
-      } else {
-        const p1=state.tempData.p1Roll;
-        renderDice('p2Dice',r);
-        row.style.opacity=1;
-        updateStatus(`P1: ${p1}  VS  P2: ${t}`);
-        setTimeout(()=>{
-          if(p1>t){ updateStatus(`P1 WINS ROUND!`); awardPoint(1); }
-          else if(t>p1){ updateStatus(`P2 WINS ROUND!`); awardPoint(2); }
-          else { updateStatus("DRAW! ROLL AGAIN."); }
-          setTimeout(()=>{
-            document.getElementById('p1Dice').style.opacity=0.5;
-            document.getElementById('p2Dice').style.opacity=0.5;
-            setBusy(false);
-            updateTurn(1);
-          }, 1400);
-        }, 900);
-      }
-    }, 600);
-  }
-
-  // boot
+  // ---------------- Boot ----------------
   (async ()=>{
     await mustAuth();
-    socket.emit('hello', { username: ME.username });
-    clearSeats();
+    await connectHello();
+    updateStatus("WAITING FOR PLAYERS...");
   })();
 </script>
 </body>
