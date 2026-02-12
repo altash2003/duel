@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     username: { type: String, unique: true, index: true },
     passwordHash: String,
     isAdmin: { type: Boolean, default: false },
-    credits: { type: Number, default: 0 }, // always a number
+    credits: { type: Number, default: 0 },
     avatar: { type: String, default: "avatar1" },
     createdAt: { type: Date, default: Date.now }
   },
@@ -110,7 +110,7 @@ app.post("/api/signup", async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // default credits if you want starter funds:
+    // starter credits (change if you want)
     const created = await User.create({ username, passwordHash, isAdmin: false, credits: 1000, avatar: "avatar1" });
 
     req.session.userId = created._id.toString();
@@ -159,7 +159,7 @@ app.get("/api/me", async (req, res) => {
   });
 });
 
-// ✅ Credits + avatar (NEVER undefined, auto-fix old users)
+// ✅ Credits always safe + auto-fix old users
 app.get("/api/credits", requireAuth, async (req, res) => {
   const me = await User.findById(req.session.userId).lean();
   if (!me) return res.status(401).json({ error: "Unauthorized" });
@@ -180,7 +180,7 @@ app.get("/api/credits", requireAuth, async (req, res) => {
   });
 });
 
-// ✅ Public player credits lookup (AUTH required)
+// ✅ Authenticated player lookup (shows credits)
 app.get("/api/player/:username", requireAuth, async (req, res) => {
   const u = await User.findOne({ username: req.params.username }).lean();
   if (!u) return res.status(404).json({ error: "Player not found" });
@@ -257,7 +257,13 @@ app.get("/api/admin/players", requireAdmin, async (req, res) => {
 app.get("/api/admin/user/:username", requireAdmin, async (req, res) => {
   const u = await User.findOne({ username: req.params.username }).lean();
   if (!u) return res.status(404).json({ error: "Not found" });
-  res.json({ ok: true, username: u.username, credits: safeCredits(u.credits), avatar: u.avatar || "avatar1", isAdmin: !!u.isAdmin });
+  res.json({
+    ok: true,
+    username: u.username,
+    credits: safeCredits(u.credits),
+    avatar: u.avatar || "avatar1",
+    isAdmin: !!u.isAdmin
+  });
 });
 
 app.get("/api/admin/txns", requireAdmin, async (req, res) => {
@@ -265,12 +271,58 @@ app.get("/api/admin/txns", requireAdmin, async (req, res) => {
   res.json({ ok: true, rows });
 });
 
+// ✅ IMPORTANT FIX: approving actually updates user credits
 app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   const { status } = req.body;
-  if (!["APPROVED", "REJECTED"].includes(status)) return res.status(400).json({ error: "Invalid status." });
+  if (!["APPROVED", "REJECTED"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status." });
+  }
 
-  const updated = await Txn.findByIdAndUpdate(req.params.id, { status }, { new: true }).lean();
-  res.json({ ok: true, updated });
+  const txn = await Txn.findById(req.params.id);
+  if (!txn) return res.status(404).json({ error: "Transaction not found." });
+
+  // prevent double-processing
+  if (txn.status !== "PENDING") {
+    return res.status(400).json({ error: "This request is already processed." });
+  }
+
+  // If rejected: just mark rejected
+  if (status === "REJECTED") {
+    txn.status = "REJECTED";
+    await txn.save();
+    return res.json({ ok: true, updated: txn });
+  }
+
+  // APPROVED: update player's credits
+  const user = await User.findById(txn.userId);
+  if (!user) return res.status(404).json({ error: "User not found." });
+
+  const currentCredits = safeCredits(user.credits);
+  const amount = safeCredits(txn.amount);
+
+  let newCredits = currentCredits;
+
+  if (txn.type === "TOPUP") {
+    newCredits = currentCredits + amount;
+  } else if (txn.type === "WITHDRAW") {
+    if (currentCredits < amount) {
+      return res.status(400).json({ error: "Insufficient credits to approve withdrawal." });
+    }
+    newCredits = currentCredits - amount;
+  } else {
+    return res.status(400).json({ error: "Invalid transaction type." });
+  }
+
+  user.credits = newCredits;
+  await user.save();
+
+  txn.status = "APPROVED";
+  await txn.save();
+
+  // ✅ realtime notify so the player panel updates instantly
+  io.emit("credits:updated", { username: user.username, credits: newCredits });
+
+  return res.json({ ok: true, updated: txn, username: user.username, credits: newCredits });
 });
 
 app.get("/api/admin/tickets", requireAdmin, async (req, res) => {
@@ -365,7 +417,6 @@ io.on("connection", (socket) => {
     const u = online.get(socket.id);
     if (!u) return;
 
-    // already seated
     if (room.seat1 === u.username || room.seat2 === u.username) return;
 
     if (seat === 1) {
@@ -397,7 +448,6 @@ io.on("connection", (socket) => {
     io.emit("state", snapshot());
   });
 
-  // Seat1 proposes: game + rounds + bet
   socket.on("proposal:create", async ({ game, roundsKey, bet }) => {
     const u = online.get(socket.id);
     if (!u) return;
@@ -429,7 +479,6 @@ io.on("connection", (socket) => {
     io.emit("proposal:incoming", { to: room.seat2, proposal: room.proposal });
   });
 
-  // Seat2 accepts/declines
   socket.on("proposal:respond", async ({ accept }) => {
     const u = online.get(socket.id);
     if (!u) return;
@@ -465,14 +514,11 @@ io.on("connection", (socket) => {
     room.pot = wager * 2;
     room.settingsLocked = true;
 
-    // ✅ Start match immediately for everyone
     io.emit("match:started", { proposal: room.proposal, pot: room.pot });
-
     io.emit("proposal:result", { ok: true, accepted: true, proposal: room.proposal, pot: room.pot });
     io.emit("state", snapshot());
   });
 
-  // Duel emotes: only seat1/seat2 can send
   socket.on("duel:emote", ({ emote }) => {
     const u = online.get(socket.id);
     if (!u) return;
