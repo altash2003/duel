@@ -16,7 +16,6 @@
       --grid-line:rgba(255,255,255,0.05);
       --sidebar-width:340px;
 
-      /* chat a bit taller */
       --betting-height:255px;
       --players-height:255px;
     }
@@ -605,14 +604,13 @@
 
   socket.on('proposal:error', (e) => alert(e?.error || "Proposal failed"));
 
-  // proposal result only for messages + credits refresh (match start happens in match:started)
   socket.on('proposal:result', async (r) => {
     await reloadCredits();
     if (!r.ok && r.error) alert(r.error);
     if (r.ok && r.accepted === false) updateStatus("PROPOSAL DECLINED.");
   });
 
-  // ✅ Match starts for BOTH players immediately
+  // ✅ match starts instantly after accept
   socket.on('match:started', async ({ proposal, pot }) => {
     await reloadCredits();
     state.game = proposal.game;
@@ -623,6 +621,15 @@
     updateStatus(`MATCH STARTED: ${proposal.game.toUpperCase()} | ${roundsLabel(proposal.roundsKey)} | BET ${proposal.bet} EACH`);
   });
 
+  // ✅ IMPORTANT: credits updated from admin instantly
+  socket.on("credits:updated", ({ username, credits }) => {
+    if (!ME || ME.username !== username) return;
+
+    ME.credits = credits ?? 0;
+    document.getElementById('meCredits').innerText = (ME.credits ?? 0);
+    document.getElementById('walletDisplay').innerText = `WALLET: ${(ME.credits ?? 0)} TC`;
+  });
+
   socket.on('duel:emote', ({ from, emote }) => {
     if (!currentState?.room?.settingsLocked) return;
     DOM.emotePop.textContent = emote;
@@ -631,7 +638,7 @@
     addChat({ user: "SYSTEM", text: `${from} used an emote ${emote}` });
   });
 
-  // ---------- Player click shows credits (NOT hidden) ----------
+  // ---------- Player click shows credits ----------
   async function onPlayerClick(p){
     const r = await fetch('/api/player/' + encodeURIComponent(p.username));
     const j = await r.json().catch(()=>({}));
@@ -693,7 +700,7 @@
     }
   }
 
-  // ---------- Voice (RMS accurate) ----------
+  // ---------- Voice RMS detection ----------
   const voice = { mode:'ptt', isTalking:false, stream:null, audioContext:null, analyser:null, raf:0, lastSpeaking:false };
 
   async function initAudio(){
@@ -789,7 +796,7 @@
     }
   });
 
-  // ---------- Proposal modal controls ----------
+  // ---------- Proposal modal ----------
   function closeProposal(){ document.getElementById('proposalModal').style.display='none'; }
   function respondProposal(accept){
     closeProposal();
