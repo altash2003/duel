@@ -19,8 +19,10 @@
       --grid:rgba(255,255,255,0.05);
       --sidebar:340px;
       --betH:255px;
-      --playersH:255px;
+      --playersH:240px; /* reduced spacing a bit */
+      --chatMinH:280px; /* chat taller */
     }
+
     *{box-sizing:border-box; font-family:'Press Start 2P', monospace;}
     html,body{height:100%;margin:0;overflow:hidden;background:var(--bg-dark);color:var(--text);}
     body{
@@ -60,7 +62,10 @@
     .pill b{color:var(--accent)}
     .pill .ok{color:#2ecc71}
 
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0 12px 0;padding:10px;background:#000;border:2px solid #222;border-radius:8px}
+    .tabs{
+      display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+      margin:14px 0 12px 0;padding:10px;background:#000;border:2px solid #222;border-radius:8px
+    }
     .tab{background:#222;color:#aaa;border:2px solid #333;padding:10px 14px;font-size:10px;cursor:pointer}
     .tab.active{background:var(--accent);color:#000;border-color:#fff;box-shadow:0 0 10px rgba(254,202,87,.25)}
     .tab.locked{opacity:.35;pointer-events:none}
@@ -69,19 +74,23 @@
     .panel{
       border:3px solid #000;background:var(--panel);box-shadow:4px 4px 0 #000;min-height:0;overflow:hidden
     }
+
+    /* Player headers: avatar image + name below */
     .phead{
-      display:flex;gap:10px;align-items:center;justify-content:center;
-      padding:10px;border-bottom:3px solid #000;background:#222;font-size:11px
+      padding:10px;border-bottom:3px solid #000;background:#222;
+      display:flex;justify-content:center
     }
-    .avatarWrap{position:relative;display:flex;align-items:center;gap:10px}
-    .avatar{
-      width:28px;height:28px;border:2px solid #000;box-shadow:2px 2px 0 #000;
+    .pheadInner{display:flex;flex-direction:column;align-items:center;gap:8px}
+    .avatarWrap{position:relative;display:flex;align-items:center;justify-content:center}
+    .avatarImg{
+      width:54px;height:54px;
+      border:3px solid #000;box-shadow:3px 3px 0 #000;
       background:#111;image-rendering:pixelated;
     }
-    .a1{background:#6c5ce7}.a2{background:#00b894}.a3{background:#e17055}.a4{background:#0984e3}.a5{background:#d63031}.a6{background:#2d3436}
+    .pname{font-size:10px;color:#fff;text-align:center;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
     .bubble{
-      position:absolute;left:34px;top:-10px;
+      position:absolute;left:58px;top:-10px;
       background:#000;border:2px solid #333;padding:6px 8px;font-size:10px;color:#fff;
       box-shadow:2px 2px 0 #000;opacity:0;transform:translateY(4px);
       transition:opacity .15s, transform .15s;pointer-events:none;
@@ -94,7 +103,7 @@
       filter:drop-shadow(2px 2px 0 #000);
     }
 
-    .scoreArea{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px}
+    .scoreArea{display:flex;flex-direction:column;align-items:center;justify-content:center;height:210px}
     .score{font-size:56px}
     .turnTag{
       margin-top:10px;border:2px solid #333;background:#000;padding:8px 10px;
@@ -115,10 +124,32 @@
     .seatBtn:hover{border-color:#fff;color:#fff}
 
     .center{display:flex;flex-direction:column;height:100%}
-    .hdrLine{border-bottom:2px solid #222;background:#111;padding:10px;text-align:center;font-size:12px}
-    .statusLine{border-bottom:2px solid #222;background:#0d0d12;padding:10px;text-align:center;font-size:10px;color:#bbb;min-height:36px;display:flex;align-items:center;justify-content:center}
-    .potLine{border-bottom:2px solid #222;background:#0b0b10;padding:10px;text-align:center;font-size:10px;color:var(--accent);display:none;min-height:36px;align-items:center;justify-content:center}
-    .proposalLine{border-bottom:2px solid #222;background:#000;padding:10px;text-align:center;font-size:9px;color:#aaa;display:none}
+
+    /* Center header format requested:
+       BEST OF 3...
+       POT: xxx
+       ROUND 1
+       result line
+    */
+    .matchLine{
+      border-bottom:2px solid #222;background:#111;
+      padding:10px;text-align:center;font-size:10px;color:var(--accent);
+      min-height:40px;display:flex;align-items:center;justify-content:center
+    }
+    .potLine{
+      border-bottom:2px solid #222;background:#0b0b10;padding:10px;text-align:center;
+      font-size:10px;color:var(--accent);min-height:36px;display:flex;align-items:center;justify-content:center;
+      display:none;
+    }
+    .roundLine{
+      border-bottom:2px solid #222;background:#0d0d12;padding:10px;text-align:center;
+      font-size:12px;color:#fff;min-height:40px;display:flex;align-items:center;justify-content:center
+    }
+    .statusLine{
+      border-bottom:2px solid #222;background:#000;padding:10px;text-align:center;
+      font-size:10px;color:#bbb;min-height:40px;display:flex;align-items:center;justify-content:center
+    }
+
     .gameBox{flex:1;min-height:0;display:grid;place-items:center;background:#000;position:relative;overflow:hidden}
     .pixelCard{border:3px solid #222;background:#0b0b10;box-shadow:6px 6px 0 #000;padding:18px;text-align:center}
     .bigNum{font-size:40px;color:#fff}
@@ -129,6 +160,7 @@
 
     .sidePanel{border:3px solid #000;background:var(--panel);box-shadow:4px 4px 0 #000;overflow:hidden;min-height:0}
     .sideHead{background:#222;border-bottom:3px solid #000;padding:10px 12px;font-size:10px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+
     .betWrap{height:var(--betH);display:flex;flex-direction:column}
     .betBody{padding:12px;background:#0b0b10;border-bottom:3px solid #000}
     .betOverlay{
@@ -137,18 +169,19 @@
     }
     .betBox{position:relative;flex:1}
     .betBtn{width:100%;margin-top:8px}
+
     .playersWrap{height:var(--playersH);display:flex;flex-direction:column;min-height:0}
     .plist{flex:1;min-height:0;background:#222}
     .pitem{
       display:flex;align-items:center;justify-content:space-between;
-      padding:10px 12px;border-bottom:1px solid #111;cursor:pointer
+      padding:8px 10px;border-bottom:1px solid #111;cursor:pointer /* reduced spacing */
     }
     .pitem:hover{background:#2b2b38}
     .ptag{border:1px solid #444;border-radius:999px;padding:2px 8px;font-size:10px;color:#aaa}
     .mic{opacity:.2}
     .mic.on{opacity:1;color:#2ecc71;text-shadow:0 0 6px rgba(46,204,113,.5)}
 
-    .chatWrap{flex:1;min-height:0;display:flex;flex-direction:column}
+    .chatWrap{flex:1;min-height:var(--chatMinH);display:flex;flex-direction:column}
     .chatLog{flex:1;min-height:0;padding:12px;background:#0b0b10;font-size:10px;line-height:1.7}
     .chatIn{display:flex;border-top:3px solid #000}
     .chatInput{flex:1;border:none;outline:none;padding:14px;background:#000;color:#fff;font-size:10px;height:50px}
@@ -205,11 +238,13 @@
         <!-- P1 -->
         <div class="panel" id="p1Panel">
           <div class="phead">
-            <div class="avatarWrap">
-              <div class="avatar a1" id="p1Avatar"></div>
-              <div class="bubble" id="p1Bubble">🔥</div>
+            <div class="pheadInner">
+              <div class="avatarWrap">
+                <img class="avatarImg" id="p1AvatarImg" alt="avatar1">
+                <div class="bubble" id="p1Bubble">🔥</div>
+              </div>
+              <div class="pname" id="p1Name">EMPTY</div>
             </div>
-            <div id="p1Name">EMPTY</div>
           </div>
           <div class="scoreArea">
             <div class="score" id="p1Score">0</div>
@@ -220,21 +255,23 @@
 
         <!-- CENTER -->
         <div class="panel center">
-          <div class="hdrLine" id="roundLine">ROUND 1</div>
-          <div class="statusLine" id="statusLine">WAITING FOR PLAYERS...</div>
+          <div class="matchLine" id="matchLine">WAITING FOR MATCH...</div>
           <div class="potLine" id="potLine">POT: <span id="potAmt">0</span> TC</div>
-          <div class="proposalLine" id="proposalLine"></div>
+          <div class="roundLine" id="roundLine">ROUND 1</div>
+          <div class="statusLine" id="statusLine">WAITING FOR PLAYERS...</div>
           <div class="gameBox" id="gameBox"></div>
         </div>
 
         <!-- P2 -->
         <div class="panel" id="p2Panel">
           <div class="phead">
-            <div class="avatarWrap">
-              <div class="avatar a1" id="p2Avatar"></div>
-              <div class="bubble" id="p2Bubble">🔥</div>
+            <div class="pheadInner">
+              <div class="avatarWrap">
+                <img class="avatarImg" id="p2AvatarImg" alt="avatar2">
+                <div class="bubble" id="p2Bubble">🔥</div>
+              </div>
+              <div class="pname" id="p2Name">EMPTY</div>
             </div>
-            <div id="p2Name">EMPTY</div>
           </div>
           <div class="scoreArea">
             <div class="score" id="p2Score">0</div>
@@ -303,8 +340,8 @@
       </div>
       <div class="mono" id="proposalText" style="margin-top:10px"></div>
       <div class="row" style="margin-top:12px">
-        <button class="btn green" style="flex:1" onclick="respond(true)">ACCEPT</button>
-        <button class="btn" style="flex:1;background:#ff4757" onclick="respond(false)">DECLINE</button>
+        <button class="btn green" id="btnAccept" style="flex:1" onclick="respond(true)">ACCEPT</button>
+        <button class="btn" id="btnDecline" style="flex:1;background:#ff4757" onclick="respond(false)">DECLINE</button>
       </div>
     </div>
   </div>
@@ -340,8 +377,8 @@
     p2Panel: el('p2Panel'),
     p1Name: el('p1Name'),
     p2Name: el('p2Name'),
-    p1Avatar: el('p1Avatar'),
-    p2Avatar: el('p2Avatar'),
+    p1AvatarImg: el('p1AvatarImg'),
+    p2AvatarImg: el('p2AvatarImg'),
     p1Bubble: el('p1Bubble'),
     p2Bubble: el('p2Bubble'),
     p1Turn: el('p1Turn'),
@@ -351,11 +388,11 @@
     p1Controls: el('p1Controls'),
     p2Controls: el('p2Controls'),
 
+    matchLine: el('matchLine'),
     roundLine: el('roundLine'),
     statusLine: el('statusLine'),
     potLine: el('potLine'),
     potAmt: el('potAmt'),
-    proposalLine: el('proposalLine'),
 
     plist: el('plist'),
     chatLog: el('chatLog'),
@@ -372,14 +409,62 @@
     profileModal: el('profileModal'),
     profileText: el('profileText'),
     proposalModal: el('proposalModal'),
-    proposalText: el('proposalText')
+    proposalText: el('proposalText'),
+    btnAccept: el('btnAccept'),
+    btnDecline: el('btnDecline')
   };
 
   function el(id){ return document.getElementById(id); }
   function esc(s){ return String(s).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
 
-  function avatarClass(a){
-    return ({avatar1:'a1',avatar2:'a2',avatar3:'a3',avatar4:'a4',avatar5:'a5',avatar6:'a6'})[a] || 'a1';
+  // --- PIXEL AVATAR GENERATOR (SVG data-uri) ---
+  function hash32(str){
+    let h = 2166136261;
+    for(let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+  function avatarDataUri(avatarKey, username){
+    const seed = hash32((avatarKey||"avatar1") + "::" + (username||""));
+    const palette = [
+      ["#6c5ce7","#1e1b4b","#a29bfe"],
+      ["#00b894","#0b3d2e","#55efc4"],
+      ["#e17055","#3b1a12","#fab1a0"],
+      ["#0984e3","#062f52","#74b9ff"],
+      ["#d63031","#3b0b0b","#ff7675"],
+      ["#2d3436","#111416","#b2bec3"],
+    ];
+    const idx = (seed % palette.length);
+    const [c1,c2,c3] = palette[idx];
+
+    // 8x8 pixel face
+    const px = [];
+    for(let y=0;y<8;y++){
+      for(let x=0;x<8;x++){
+        const n = (seed + x*2654435761 + y*1013904223) >>> 0;
+        let col = "#0b0b10";
+        const r = n % 100;
+        if(r < 35) col = c2;
+        else if(r < 70) col = c1;
+        else col = c3;
+        // make eyes
+        if((x===2||x===5) && y===3) col = "#000000";
+        if((x===2||x===5) && y===4) col = "#ffffff";
+        px.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${col}"/>`);
+      }
+    }
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 8 8">
+        <rect x="0" y="0" width="8" height="8" fill="#000"/>
+        ${px.join("")}
+        <rect x="0" y="0" width="8" height="8" fill="none" stroke="#111" stroke-width="0.2"/>
+      </svg>
+    `.trim();
+
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
 
   async function api(url, opt){
@@ -455,20 +540,17 @@
   };
 
   function setStatus(t){ UI.statusLine.textContent = t; }
-  function setRoundLine(){ UI.roundLine.textContent = `ROUND ${M.p1 + M.p2 + 1}`; }
-
-  function showProposalSummary(){
-    const pr = STATE?.room?.proposal;
-    if(!pr){
-      UI.proposalLine.style.display='none';
-      UI.proposalLine.textContent='';
+  function setMatchLine(){
+    if(!STATE?.room?.settingsLocked || !STATE?.room?.proposal){
+      UI.matchLine.textContent = "WAITING FOR MATCH...";
       return;
     }
-    UI.proposalLine.style.display='block';
-    UI.proposalLine.textContent =
-      `PROPOSAL: ${pr.game.toUpperCase()} | ${roundsLabel(pr.roundsKey)} | BET ${pr.bet} TC EACH | POT ${pr.bet*2} TC`;
+    UI.matchLine.textContent = roundsLabel(STATE.room.proposal.roundsKey);
   }
-
+  function setRoundLine(){
+    // Round count: each side acts once per round => use (p1+p2)+1 as visual round tracker for these simple games
+    UI.roundLine.textContent = `ROUND ${Math.min(99,(M.p1 + M.p2 + 1))}`;
+  }
   function setPot(){
     const pot = STATE?.room?.pot || 0;
     if(pot>0){
@@ -479,32 +561,34 @@
     }
   }
 
+  // critical: single source of truth to close proposal modal for BOTH sides
+  function hardCloseProposal(){
+    UI.proposalModal.style.display='none';
+    UI.btnAccept.disabled = true;
+    UI.btnDecline.disabled = true;
+  }
+
   function applyTurnUI(){
     UI.p1Panel.classList.toggle('active1', M.turn===1 && !M.over);
     UI.p2Panel.classList.toggle('active2', M.turn===2 && !M.over);
-    UI.p1Turn.classList.toggle('show', M.turn===1 && mySeat()===1 && !M.over);
-    UI.p2Turn.classList.toggle('show', M.turn===2 && mySeat()===2 && !M.over);
 
-    // opponent also sees a clear indicator
-    // show "OPPONENT TURN" tag for the other side
-    if(mySeat()===1){
-      UI.p2Turn.textContent = (M.turn===2 && !M.over) ? "OPPONENT TURN" : " ";
-      UI.p2Turn.classList.toggle('show', M.turn===2 && !M.over);
-      UI.p1Turn.textContent = "YOUR TURN";
-    } else if(mySeat()===2){
-      UI.p1Turn.textContent = (M.turn===1 && !M.over) ? "OPPONENT TURN" : " ";
+    const seat = mySeat();
+
+    UI.p1Turn.classList.remove('show');
+    UI.p2Turn.classList.remove('show');
+    UI.p1Turn.textContent = "YOUR TURN";
+    UI.p2Turn.textContent = "YOUR TURN";
+
+    if(seat===1){
       UI.p1Turn.classList.toggle('show', M.turn===1 && !M.over);
-      UI.p2Turn.textContent = "YOUR TURN";
-    } else {
-      // spectators just see turn highlight; no tags needed
-      UI.p1Turn.classList.remove('show');
-      UI.p2Turn.classList.remove('show');
-      UI.p1Turn.textContent="YOUR TURN";
-      UI.p2Turn.textContent="YOUR TURN";
+      UI.p2Turn.textContent = "OPPONENT TURN";
+      UI.p2Turn.classList.toggle('show', M.turn===2 && !M.over);
+    } else if(seat===2){
+      UI.p2Turn.classList.toggle('show', M.turn===2 && !M.over);
+      UI.p1Turn.textContent = "OPPONENT TURN";
+      UI.p1Turn.classList.toggle('show', M.turn===1 && !M.over);
     }
-
-    // critical: enable/disable the ACTION button properly
-    syncActionButton();
+    syncActionButtons();
   }
 
   function canAct(){
@@ -515,13 +599,18 @@
     return seat === M.turn;
   }
 
-  // We store the current action button id (per game)
-  let currentActionBtnId = null;
-  function syncActionButton(){
-    if(!currentActionBtnId) return;
-    const btn = document.getElementById(currentActionBtnId);
-    if(!btn) return;
-    btn.disabled = !canAct();
+  // We can have 1 action button OR multiple (RPS). We track them in a list.
+  let actionButtonIds = [];
+  function setActionButtons(ids){
+    actionButtonIds = ids || [];
+    syncActionButtons();
+  }
+  function syncActionButtons(){
+    const disabled = !canAct();
+    actionButtonIds.forEach(id=>{
+      const btn = document.getElementById(id);
+      if(btn) btn.disabled = disabled;
+    });
   }
 
   function resetMatch(){
@@ -554,7 +643,7 @@
       </div>
     `;
     setStatus("WINNER DECLARED!");
-    setTimeout(()=>socket.emit('match:ended'), 2000);
+    setTimeout(()=>socket.emit('match:ended'), 1800);
   }
 
   // -------- Seat controls / avatar / propose ----------
@@ -616,7 +705,7 @@
         body: JSON.stringify({ avatar: sel.value })
       });
       await reloadCredits();
-      socket.emit('hello', { username: ME.username }); // refresh online avatar
+      socket.emit('hello', { username: ME.username });
     };
     g1.appendChild(sel);
     wrap.appendChild(g1);
@@ -676,7 +765,7 @@
       const b = document.createElement('button');
       b.className='btn';
       b.textContent=e;
-      b.disabled = !STATE.room.settingsLocked; // only after match started
+      b.disabled = !STATE.room.settingsLocked;
       b.onclick = ()=>socket.emit('duel:emote', { emote:e });
       row.appendChild(b);
     });
@@ -712,9 +801,9 @@
     if(STATE?.room?.settingsLocked) renderGame();
   }
 
-  // -------- Games (pixel + proper animations + correct turn enabling) ----------
+  // -------- Games ----------
   function renderGame(){
-    currentActionBtnId = null;
+    setActionButtons([]); // reset
     UI.gameBox.innerHTML = '';
 
     if(M.game === 'hl') renderHL();
@@ -724,19 +813,14 @@
     else if(M.game === 'rps') renderRPS();
     else renderPlaceholder();
 
-    applyTurnUI(); // critical
+    applyTurnUI();
   }
 
   function renderPlaceholder(){
     UI.gameBox.innerHTML = `<div class="pixelCard"><div style="color:var(--accent);font-size:10px;margin-bottom:10px">${esc(M.game.toUpperCase())}</div><div style="font-size:9px;color:#888">PIXEL MODE</div></div>`;
   }
 
-  function setActionBtn(btnId){
-    currentActionBtnId = btnId;
-    syncActionButton();
-  }
-
-  // HI-LO (matches your screenshot)
+  // HI-LO
   function renderHL(){
     UI.gameBox.innerHTML = `
       <div class="pixelCard" style="width:min(420px,90%)">
@@ -747,14 +831,14 @@
         <button class="btn" id="btnDraw">DRAW</button>
       </div>
     `;
-    setActionBtn('btnDraw');
+    setActionButtons(['btnDraw']);
 
     const cardBox = document.getElementById('cardBox');
     const cardNum = document.getElementById('cardNum');
 
     document.getElementById('btnDraw').onclick = () => {
       if(!canAct()) return;
-      M.busy = true; syncActionButton();
+      M.busy = true; syncActionButtons();
 
       cardBox.classList.remove('animShake'); void cardBox.offsetWidth; cardBox.classList.add('animShake');
 
@@ -789,7 +873,7 @@
         <button class="btn" id="btnRoll">ROLL</button>
       </div>
     `;
-    setActionBtn('btnRoll');
+    setActionButtons(['btnRoll']);
 
     const row = document.getElementById('diceRow');
     const mkDie = (n)=>`<div class="pixelCard" style="width:70px;height:70px;display:grid;place-items:center"><div class="bigNum" style="font-size:28px">${n}</div></div>`;
@@ -799,7 +883,7 @@
 
     document.getElementById('btnRoll').onclick = ()=>{
       if(!canAct()) return;
-      M.busy = true; syncActionButton();
+      M.busy = true; syncActionButtons();
 
       row.classList.remove('animShake'); void row.offsetWidth; row.classList.add('animShake');
 
@@ -838,14 +922,14 @@
         <button class="btn" id="btnFlip">FLIP</button>
       </div>
     `;
-    setActionBtn('btnFlip');
+    setActionButtons(['btnFlip']);
 
     const coin = document.getElementById('coin');
     const txt = document.getElementById('coinTxt');
 
     document.getElementById('btnFlip').onclick = ()=>{
       if(!canAct()) return;
-      M.busy=true; syncActionButton();
+      M.busy=true; syncActionButtons();
 
       coin.classList.remove('animFlip'); void coin.offsetWidth; coin.classList.add('animFlip');
 
@@ -883,14 +967,14 @@
         <button class="btn" id="btnSpin">SPIN</button>
       </div>
     `;
-    setActionBtn('btnSpin');
+    setActionButtons(['btnSpin']);
 
     const wheel = document.getElementById('wheel');
     const txt = document.getElementById('wheelTxt');
 
     document.getElementById('btnSpin').onclick = ()=>{
       if(!canAct()) return;
-      M.busy=true; syncActionButton();
+      M.busy=true; syncActionButtons();
 
       wheel.classList.remove('animFlip'); void wheel.offsetWidth; wheel.classList.add('animFlip');
 
@@ -933,17 +1017,17 @@
         <div style="font-size:10px;color:#bbb" id="rpsMsg">WAITING...</div>
       </div>
     `;
+    setActionButtons(['rRock','rPaper','rScis']);
 
-    currentActionBtnId = null; // 3 buttons
     const msg = document.getElementById('rpsMsg');
 
+    const score = (x)=>x==="ROCK"?0:x==="PAPER"?1:2;
     const doPick = (pick)=>{
       if(!canAct()) return;
-      M.busy=true;
+      M.busy=true; syncActionButtons();
 
       msg.textContent = `SEAT ${M.turn} PICKED ${pick}`;
 
-      const score = (x)=>x==="ROCK"?0:x==="PAPER"?1:2;
       if(M.turn===1){
         M.temp.p1=pick;
         setStatus(`SEAT 1 PICKED. SEAT 2 TURN.`);
@@ -964,20 +1048,6 @@
     el('rRock').onclick = ()=>doPick("ROCK");
     el('rPaper').onclick = ()=>doPick("PAPER");
     el('rScis').onclick = ()=>doPick("SCISSORS");
-
-    // disable/enable them via applyTurnUI
-    const patch = ()=>{
-      const disabled = !canAct();
-      el('rRock').disabled = disabled;
-      el('rPaper').disabled = disabled;
-      el('rScis').disabled = disabled;
-    };
-    const old = applyTurnUI;
-    applyTurnUI = function(){
-      old();
-      patch();
-    };
-    patch();
   }
 
   // -------- Chat ----------
@@ -1008,9 +1078,8 @@
   function closeProfile(){ UI.profileModal.style.display='none'; }
 
   // -------- Proposal modal ----------
-  function closeProposal(){ UI.proposalModal.style.display='none'; }
+  function closeProposal(){ hardCloseProposal(); }
   function respond(accept){
-    closeProposal();
     socket.emit('proposal:respond', { accept: !!accept });
   }
 
@@ -1027,7 +1096,6 @@
       UI.betGo.disabled = true;
       return;
     }
-    // spectators: overlay depends on duel lock
     if(STATE?.room?.settingsLocked){
       UI.betOverlay.style.display = 'none';
       UI.bet1.disabled = false;
@@ -1077,8 +1145,13 @@
       left.style.gap='10px';
       left.style.alignItems='center';
 
-      const av = document.createElement('div');
-      av.className = `avatar ${avatarClass(p.avatar)}`;
+      const av = document.createElement('img');
+      av.className = 'avatarImg';
+      av.style.width='34px';
+      av.style.height='34px';
+      av.style.borderWidth='2px';
+      av.style.boxShadow='2px 2px 0 #000';
+      av.src = avatarDataUri(p.avatar, p.username);
       left.appendChild(av);
 
       const name = document.createElement('div');
@@ -1115,82 +1188,98 @@
   socket.on('state', (s)=>{
     STATE = s;
 
+    // Names
     UI.p1Name.textContent = s.room.seat1 || 'EMPTY';
     UI.p2Name.textContent = s.room.seat2 || 'EMPTY';
 
-    // avatars for seated
+    // Seat avatars as generated images
     const p1 = s.players.find(x=>x.username===s.room.seat1);
     const p2 = s.players.find(x=>x.username===s.room.seat2);
-    UI.p1Avatar.className = `avatar ${avatarClass(p1?.avatar || 'avatar1')}`;
-    UI.p2Avatar.className = `avatar ${avatarClass(p2?.avatar || 'avatar1')}`;
+
+    UI.p1AvatarImg.src = avatarDataUri(p1?.avatar || "avatar1", s.room.seat1 || "EMPTY");
+    UI.p2AvatarImg.src = avatarDataUri(p2?.avatar || "avatar1", s.room.seat2 || "EMPTY");
 
     setPot();
-    showProposalSummary();
+    setMatchLine();
     lockTabs();
     renderPlayers(s.players);
     renderSeatControls();
     refreshBetAccess();
 
-    // status
+    // Status
     if(!s.room.seat1 && !s.room.seat2) setStatus("WAITING FOR PLAYERS...");
     else if(s.room.seat1 && !s.room.seat2) setStatus("WAITING FOR OPPONENT...");
     else if(!s.room.settingsLocked) setStatus(`${proposer() || 'FIRST'} MUST PROPOSE MATCH...`);
 
-    // If match is locked and game not rendered yet -> render
+    // Match rendering
     if(s.room.settingsLocked){
       renderGame();
+      applyTurnUI();
     } else {
       UI.gameBox.innerHTML = `<div class="pixelCard"><div style="color:var(--accent);font-size:10px;margin-bottom:10px">WAITING</div><div style="font-size:9px;color:#888">MATCH NOT STARTED</div></div>`;
-      currentActionBtnId = null;
+      setActionButtons([]);
     }
-
-    // critical: if seated changed, re-evaluate controls/buttons
-    applyTurnUI();
   });
 
   socket.on('chat', (m)=> addChat(m.user, m.text));
 
-  // ✅ BOTH CAN SEE the proposal modal, but only opponent gets buttons
+  // Proposal incoming: show modal for BOTH, but only opponent can click
   socket.on('proposal:incoming', ({ proposal })=>{
     if(!ME) return;
+
     const opp = (STATE?.room?.seat1===proposal.by) ? STATE?.room?.seat2 : STATE?.room?.seat1;
     const amOpponent = (ME.username === opp);
 
     UI.proposalText.textContent =
       `FROM: ${proposal.by}\nGAME: ${proposal.game.toUpperCase()}\nROUNDS: ${roundsLabel(proposal.roundsKey)}\nBET: ${proposal.bet} TC EACH\nPOT: ${proposal.bet*2} TC\n\n${amOpponent ? 'ACCEPT OR DECLINE.' : 'WAITING OPPONENT RESPONSE...'}`;
 
-    // show modal for BOTH (as requested)
-    UI.proposalModal.style.display='flex';
+    UI.btnAccept.disabled = !amOpponent;
+    UI.btnDecline.disabled = !amOpponent;
 
-    // disable buttons if you're not opponent
-    const btns = UI.proposalModal.querySelectorAll('button');
-    // order: CLOSE, ACCEPT, DECLINE
-    if(btns[1]) btns[1].disabled = !amOpponent;
-    if(btns[2]) btns[2].disabled = !amOpponent;
+    UI.proposalModal.style.display='flex';
   });
 
   socket.on('proposal:error', (e)=> alert(e?.error || "Proposal failed"));
 
+  // Ensure both sides close modal and stay synced
   socket.on('proposal:result', async (r)=>{
     await reloadCredits();
-    if(!r.ok && r.error) alert(r.error);
-    if(r.ok && r.accepted===false) setStatus("PROPOSAL DECLINED.");
+
+    if(!r.ok && r.error){
+      hardCloseProposal();
+      alert(r.error);
+      return;
+    }
+
+    // Declined: close for both and reset visuals
+    if(r.ok && r.accepted===false){
+      hardCloseProposal();
+      setStatus("PROPOSAL DECLINED.");
+      UI.matchLine.textContent = "WAITING FOR MATCH...";
+      UI.potLine.style.display='none';
+      return;
+    }
+
+    // Accepted: close for both — match:started will immediately follow
+    if(r.ok && r.accepted===true){
+      hardCloseProposal();
+      setStatus("MATCH STARTING...");
+    }
   });
 
   socket.on('match:started', async ({ proposal, pot })=>{
     await reloadCredits();
+    hardCloseProposal();
 
     M.game = proposal.game;
     M.roundsKey = proposal.roundsKey;
     M.bet = proposal.bet;
     M.target = roundsTarget(proposal.roundsKey);
 
-    // reset
-    M.p1=0; M.p2=0; M.turn=1; M.over=false; M.busy=false; M.temp={};
-    UI.p1Score.textContent="0"; UI.p2Score.textContent="0";
-    setRoundLine();
+    resetMatch();
 
-    setStatus(`MATCH STARTED: ${proposal.game.toUpperCase()} | ${roundsLabel(proposal.roundsKey)} | POT ${pot} TC`);
+    UI.matchLine.textContent = roundsLabel(proposal.roundsKey);
+    setStatus(`POT: ${pot}TC | SEAT 1 STARTS`);
     setGame(M.game);
     renderGame();
     applyTurnUI();
