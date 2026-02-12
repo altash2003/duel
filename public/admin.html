@@ -4,29 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ADMIN PANEL</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;background:#0f0f12;color:#fff;font-family:'Press Start 2P';padding:18px}
+    *{box-sizing:border-box;font-family:'Press Start 2P', monospace;}
+    body{margin:0;background:#0f0f12;color:#fff;padding:18px}
     .wrap{max-width:1100px;margin:0 auto}
-    h1{color:#feca57;margin:0 0 14px 0}
+    h1{color:#feca57;margin:0 0 14px 0;font-size:18px;text-shadow:3px 3px 0 #000}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
-    .btn{background:#2f3640;color:#fff;border:2px solid #000;padding:10px 12px;font-size:10px;font-family:'Press Start 2P';cursor:pointer;box-shadow:3px 3px 0 #000}
+    .btn{background:#2f3640;color:#fff;border:2px solid #000;padding:10px 12px;font-size:10px;cursor:pointer;box-shadow:3px 3px 0 #000}
     .btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
     .btn.green{background:#2ecc71;color:#000}
     .btn.red{background:#ff4757;color:#fff}
     .btn.gray{background:#555}
     .card{background:#121218;border:2px solid #333;padding:12px;box-shadow:3px 3px 0 #000}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif;font-size:14px}
+    table{width:100%;border-collapse:collapse;font-size:10px}
     th,td{border-bottom:1px solid #222;padding:10px;text-align:left;vertical-align:top}
-    th{color:#feca57;font-family:'Press Start 2P';font-size:10px}
-    .tag{display:inline-block;border:1px solid #444;border-radius:999px;padding:2px 8px;font-size:11px;color:#aaa}
+    th{color:#feca57;font-size:10px}
+    .tag{display:inline-block;border:1px solid #444;border-radius:999px;padding:2px 8px;font-size:10px;color:#aaa}
     .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
     .tab{padding:10px 12px;border:2px solid #333;background:#000;color:#aaa;cursor:pointer;font-size:10px}
     .tab.active{border-color:#fff;color:#fff}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px}
-    textarea{width:100%;min-height:90px;background:#000;border:2px solid #333;color:#fff;padding:10px;font-family:ui-monospace}
-    input{width:100%;background:#000;border:2px solid #333;color:#fff;padding:10px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;font-size:12px;white-space:pre-wrap}
+    input,select,textarea{width:100%;background:#000;border:2px solid #333;color:#fff;padding:12px;font-size:10px}
+    textarea{min-height:90px}
   </style>
 </head>
 <body>
@@ -42,9 +43,23 @@
     <div class="card">
       <div class="row" style="justify-content:space-between;align-items:center">
         <div>PLAYERS</div>
-        <span class="tag">click a username</span>
+        <span class="tag">click to view</span>
       </div>
+
+      <div class="card" style="margin:10px 0">
+        <div style="margin-bottom:10px;color:#feca57">DIRECT TOPUP</div>
+        <div class="row">
+          <select id="topUser" style="flex:1"></select>
+          <input id="topAmt" type="number" min="1" placeholder="AMOUNT" style="flex:1">
+        </div>
+        <input id="topNote" placeholder="NOTE (optional)">
+        <div class="row">
+          <button class="btn green" onclick="directTopup()">TOPUP NOW</button>
+        </div>
+      </div>
+
       <div id="players"></div>
+
       <div class="card" style="margin-top:10px">
         <div style="margin-bottom:8px">PLAYER INFO</div>
         <div id="playerInfo" class="mono">Click a player to view credits.</div>
@@ -52,7 +67,7 @@
     </div>
 
     <div class="card">
-      <div style="margin-bottom:10px">TOPUP / WITHDRAW</div>
+      <div style="margin-bottom:10px">TOPUP / WITHDRAW REQUESTS</div>
       <div class="tabs">
         <button class="tab active" id="txTabActive" onclick="setTxArchived(false)">ACTIVE</button>
         <button class="tab" id="txTabArchived" onclick="setTxArchived(true)">ARCHIVED</button>
@@ -84,9 +99,19 @@
 </div>
 
 <script>
+  // deterrent only
+  window.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if (e.ctrlKey && (k === 'u' || k === 's' || k === 'p')) e.preventDefault();
+    if (e.key === 'F12') e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) e.preventDefault();
+  }, { capture:true });
+
   let txArchived = false;
   let ticketArchived = false;
   let selectedTicketId = null;
+  let cachedPlayers = [];
 
   async function api(url, opt){
     const r = await fetch(url, opt);
@@ -97,6 +122,18 @@
 
   async function loadPlayers(){
     const j = await api('/api/admin/players');
+    cachedPlayers = j.rows;
+
+    // dropdown for topup
+    const sel = document.getElementById('topUser');
+    sel.innerHTML = '';
+    j.rows.forEach(p=>{
+      const o = document.createElement('option');
+      o.value = p.username;
+      o.textContent = p.username + (p.isAdmin ? ' (ADMIN)' : '');
+      sel.appendChild(o);
+    });
+
     const el = document.getElementById('players');
     el.innerHTML = '';
     const list = document.createElement('div');
@@ -106,16 +143,36 @@
       const b = document.createElement('button');
       b.className='btn';
       b.textContent = p.username + (p.isAdmin ? ' (ADMIN)' : '');
-      b.onclick = async ()=>{
-        const info = await api('/api/admin/players'); // quick refresh
-        const u = info.rows.find(x=>x.username===p.username);
+      b.onclick = ()=>{
+        const u = cachedPlayers.find(x=>x.username===p.username);
         document.getElementById('playerInfo').textContent =
-          `username: ${u.username}\nadmin: ${u.isAdmin}\ncredits: ${u.credits}\navatar: ${u.avatar}`;
+          `NAME: ${u.username}\nSTART DATE: ${new Date(u.createdAt).toLocaleString()}\nCREDITS: ${u.credits} TC\nAVATAR: ${u.avatar}\nADMIN: ${u.isAdmin}`;
       };
       list.appendChild(b);
     });
 
     el.appendChild(list);
+  }
+
+  async function directTopup(){
+    const username = document.getElementById('topUser').value;
+    const amount = parseInt(document.getElementById('topAmt').value,10);
+    const note = document.getElementById('topNote').value.trim() || "ADMIN TOPUP";
+
+    if(!username) return alert('Select a player');
+    if(!Number.isFinite(amount) || amount<=0) return alert('Invalid amount');
+
+    await api('/api/admin/topup', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, amount, note })
+    });
+
+    document.getElementById('topAmt').value='';
+    document.getElementById('topNote').value='';
+    await loadPlayers();
+    await loadTxns();
+    alert(`Topped up ${username} by ${amount} TC`);
   }
 
   function setTxArchived(v){
@@ -129,19 +186,10 @@
     const j = await api('/api/admin/txns?archived=' + (txArchived ? '1':'0'));
     const el = document.getElementById('txns');
 
-    if (!j.rows.length) {
-      el.innerHTML = '<div class="mono">No transactions.</div>';
-      return;
-    }
+    if (!j.rows.length) { el.innerHTML = '<div class="mono">No transactions.</div>'; return; }
 
     const table = document.createElement('table');
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>TYPE</th><th>AMOUNT</th><th>STATUS</th><th>NOTE</th><th>ACTION</th>
-        </tr>
-      </thead>
-    `;
+    table.innerHTML = `<thead><tr><th>TYPE</th><th>AMT</th><th>STATUS</th><th>NOTE</th><th>ACTION</th></tr></thead>`;
     const tb = document.createElement('tbody');
 
     j.rows.forEach(t=>{
@@ -153,9 +201,9 @@
         <td class="mono">${(t.note||'')}</td>
         <td></td>
       `;
-      const td = tr.querySelector('td:last-child');
+      const td = tr.lastElementChild;
 
-      if (!txArchived) {
+      if(!txArchived){
         const approve = document.createElement('button');
         approve.className='btn green';
         approve.textContent='APPROVE';
@@ -164,36 +212,33 @@
         reject.className='btn red';
         reject.textContent='REJECT';
 
-        // ✅ grey out after action (both)
         const done = (t.status !== 'PENDING');
         approve.disabled = done;
         reject.disabled = done;
 
         approve.onclick = async ()=>{
-          approve.disabled = true;
-          reject.disabled = true;
-          try {
+          approve.disabled = true; reject.disabled = true;
+          try{
             await api('/api/admin/txns/' + t._id, {
               method:'POST',
               headers:{'Content-Type':'application/json'},
               body: JSON.stringify({ status:'APPROVED' })
             });
-          } catch(e) { alert(e.message); }
-          loadTxns();
-          loadPlayers();
+          }catch(e){ alert(e.message); }
+          await loadTxns();
+          await loadPlayers();
         };
 
         reject.onclick = async ()=>{
-          approve.disabled = true;
-          reject.disabled = true;
-          try {
+          approve.disabled = true; reject.disabled = true;
+          try{
             await api('/api/admin/txns/' + t._id, {
               method:'POST',
               headers:{'Content-Type':'application/json'},
               body: JSON.stringify({ status:'REJECTED' })
             });
-          } catch(e) { alert(e.message); }
-          loadTxns();
+          }catch(e){ alert(e.message); }
+          await loadTxns();
         };
 
         const arch = document.createElement('button');
@@ -205,7 +250,7 @@
             headers:{'Content-Type':'application/json'},
             body: JSON.stringify({ archived:true })
           });
-          loadTxns();
+          await loadTxns();
         };
 
         td.appendChild(approve);
@@ -223,7 +268,7 @@
             headers:{'Content-Type':'application/json'},
             body: JSON.stringify({ archived:false })
           });
-          loadTxns();
+          await loadTxns();
         };
         td.appendChild(un);
       }
@@ -247,19 +292,10 @@
     const j = await api('/api/admin/tickets?archived=' + (ticketArchived ? '1':'0'));
     const el = document.getElementById('tickets');
 
-    if (!j.rows.length) {
-      el.innerHTML = '<div class="mono">No tickets.</div>';
-      return;
-    }
+    if (!j.rows.length) { el.innerHTML = '<div class="mono">No tickets.</div>'; return; }
 
     const table = document.createElement('table');
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>SUBJECT</th><th>STATUS</th><th>OPEN</th><th>ARCHIVE</th>
-        </tr>
-      </thead>
-    `;
+    table.innerHTML = `<thead><tr><th>SUBJECT</th><th>STATUS</th><th>OPEN</th><th>ARCHIVE</th></tr></thead>`;
     const tb = document.createElement('tbody');
 
     j.rows.forEach(t=>{
@@ -276,7 +312,7 @@
 
       const openBtn = document.createElement('button');
       openBtn.className='btn';
-      openBtn.textContent='OPEN THREAD';
+      openBtn.textContent='OPEN';
       openBtn.onclick = ()=>selectTicket(t._id);
       openTd.appendChild(openBtn);
 
@@ -289,11 +325,11 @@
           headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ archived: !ticketArchived })
         });
-        if (selectedTicketId === t._id) {
-          selectedTicketId = null;
-          document.getElementById('ticketThread').textContent = 'Select a ticket to view messages.';
+        if(selectedTicketId===t._id){
+          selectedTicketId=null;
+          document.getElementById('ticketThread').textContent='Select a ticket to view messages.';
         }
-        loadTickets();
+        await loadTickets();
       };
       archTd.appendChild(aBtn);
 
@@ -307,7 +343,6 @@
 
   async function selectTicket(id){
     selectedTicketId = id;
-    // admin can view using player route (server allows admin)
     const j = await api('/api/tickets/' + id);
     const lines = j.ticket.messages.map(m => `[${new Date(m.ts).toLocaleString()}] ${m.from}: ${m.text}`);
     document.getElementById('ticketThread').textContent = lines.join('\n');
@@ -324,8 +359,8 @@
       body: JSON.stringify({ text })
     });
     document.getElementById('ticketReply').value = '';
-    selectTicket(selectedTicketId);
-    loadTickets();
+    await selectTicket(selectedTicketId);
+    await loadTickets();
   }
 
   async function closeTicket(){
@@ -335,8 +370,8 @@
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ status:'CLOSED' })
     });
-    selectTicket(selectedTicketId);
-    loadTickets();
+    await selectTicket(selectedTicketId);
+    await loadTickets();
   }
 
   (async ()=>{
