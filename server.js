@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     username: { type: String, unique: true, index: true },
     passwordHash: String,
     isAdmin: { type: Boolean, default: false },
-    credits: { type: Number, default: 1000 },
+    credits: { type: Number, default: 0 }, // always a number
     avatar: { type: String, default: "avatar1" },
     createdAt: { type: Date, default: Date.now }
   },
@@ -92,6 +92,10 @@ async function requireAdmin(req, res, next) {
   next();
 }
 
+function safeCredits(n) {
+  return Number.isFinite(n) ? Math.floor(n) : 0;
+}
+
 // ----- Auth -----
 app.post("/api/signup", async (req, res) => {
   try {
@@ -105,7 +109,9 @@ app.post("/api/signup", async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const created = await User.create({ username, passwordHash, isAdmin: false });
+
+    // default credits if you want starter funds:
+    const created = await User.create({ username, passwordHash, isAdmin: false, credits: 1000, avatar: "avatar1" });
 
     req.session.userId = created._id.toString();
     req.session.username = created.username;
@@ -153,16 +159,40 @@ app.get("/api/me", async (req, res) => {
   });
 });
 
-// Credits + avatar
+// ✅ Credits + avatar (NEVER undefined, auto-fix old users)
 app.get("/api/credits", requireAuth, async (req, res) => {
   const me = await User.findById(req.session.userId).lean();
+  if (!me) return res.status(401).json({ error: "Unauthorized" });
+
+  const credits = safeCredits(me.credits);
+  const avatar = me.avatar || "avatar1";
+
+  if (!Number.isFinite(me.credits) || !me.avatar) {
+    await User.updateOne({ _id: me._id }, { $set: { credits, avatar } });
+  }
+
   res.json({
     ok: true,
     username: me.username,
-    credits: me.credits,
-    avatar: me.avatar,
+    credits,
+    avatar,
     isAdmin: !!me.isAdmin
   });
+});
+
+// ✅ Public player credits lookup (AUTH required)
+app.get("/api/player/:username", requireAuth, async (req, res) => {
+  const u = await User.findOne({ username: req.params.username }).lean();
+  if (!u) return res.status(404).json({ error: "Player not found" });
+
+  const credits = safeCredits(u.credits);
+  const avatar = u.avatar || "avatar1";
+
+  if (!Number.isFinite(u.credits) || !u.avatar) {
+    await User.updateOne({ username: u.username }, { $set: { credits, avatar } });
+  }
+
+  res.json({ ok: true, username: u.username, credits, avatar });
 });
 
 app.post("/api/avatar", requireAuth, async (req, res) => {
@@ -227,7 +257,7 @@ app.get("/api/admin/players", requireAdmin, async (req, res) => {
 app.get("/api/admin/user/:username", requireAdmin, async (req, res) => {
   const u = await User.findOne({ username: req.params.username }).lean();
   if (!u) return res.status(404).json({ error: "Not found" });
-  res.json({ ok: true, username: u.username, credits: u.credits, avatar: u.avatar, isAdmin: !!u.isAdmin });
+  res.json({ ok: true, username: u.username, credits: safeCredits(u.credits), avatar: u.avatar || "avatar1", isAdmin: !!u.isAdmin });
 });
 
 app.get("/api/admin/txns", requireAdmin, async (req, res) => {
@@ -308,7 +338,7 @@ io.on("connection", (socket) => {
       const u = await getUser(username.trim());
       if (!u) return;
 
-      online.set(socket.id, { username: u.username, avatar: u.avatar, speaking: false });
+      online.set(socket.id, { username: u.username, avatar: u.avatar || "avatar1", speaking: false });
       io.emit("state", snapshot());
     } catch (e) {
       console.error(e);
@@ -346,7 +376,6 @@ io.on("connection", (socket) => {
       room.seat2 = u.username;
     } else return;
 
-    // reset pending proposal when seating changes
     room.proposal = null;
     room.pot = 0;
     room.settingsLocked = false;
@@ -372,7 +401,7 @@ io.on("connection", (socket) => {
   socket.on("proposal:create", async ({ game, roundsKey, bet }) => {
     const u = online.get(socket.id);
     if (!u) return;
-    if (room.seat1 !== u.username) return; // only seat1 proposes
+    if (room.seat1 !== u.username) return;
     if (!room.seat2) return;
     if (room.settingsLocked) return;
 
@@ -387,7 +416,7 @@ io.on("connection", (socket) => {
     const p2 = await getUser(room.seat2);
     if (!p1 || !p2) return;
 
-    if (p1.credits < wager || p2.credits < wager) {
+    if (safeCredits(p1.credits) < wager || safeCredits(p2.credits) < wager) {
       socket.emit("proposal:error", { error: "One of the players has insufficient credits." });
       return;
     }
@@ -422,16 +451,22 @@ io.on("connection", (socket) => {
     const p2 = await getUser(room.seat2);
     if (!p1 || !p2) return;
 
-    if (p1.credits < wager || p2.credits < wager) {
+    const c1 = safeCredits(p1.credits);
+    const c2 = safeCredits(p2.credits);
+
+    if (c1 < wager || c2 < wager) {
       io.emit("proposal:result", { ok: false, accepted: false, error: "Insufficient credits." });
       return;
     }
 
-    await setCredits(room.seat1, p1.credits - wager);
-    await setCredits(room.seat2, p2.credits - wager);
+    await setCredits(room.seat1, c1 - wager);
+    await setCredits(room.seat2, c2 - wager);
 
     room.pot = wager * 2;
     room.settingsLocked = true;
+
+    // ✅ Start match immediately for everyone
+    io.emit("match:started", { proposal: room.proposal, pot: room.pot });
 
     io.emit("proposal:result", { ok: true, accepted: true, proposal: room.proposal, pot: room.pot });
     io.emit("state", snapshot());
@@ -449,7 +484,6 @@ io.on("connection", (socket) => {
     io.emit("duel:emote", { from: u.username, emote, ts: Date.now() });
   });
 
-  // Called by client when match ends to clear seats
   socket.on("match:ended", () => {
     clearMatch();
     io.emit("state", snapshot());
