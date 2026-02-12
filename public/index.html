@@ -5,539 +5,428 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DUEL LIVE</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg-dark:#121216; --bg-panel:#1e1e24;
-      --p1-color:#ff4757; --p2-color:#2e86de;
-      --accent:#feca57; --text:#ffffff;
-      --grid-line:rgba(255,255,255,0.05);
-      --sidebar-width:340px;
-      --betting-height:255px;
-      --players-height:255px;
+      --bg-dark:#0f0f12;
+      --panel:#14141b;
+      --panel2:#0b0b10;
+      --p1:#ff4757;
+      --p2:#2e86de;
+      --accent:#feca57;
+      --text:#ffffff;
+      --grid:rgba(255,255,255,0.05);
+      --sidebar:340px;
+      --betH:255px;
+      --playersH:255px;
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box; font-family:'Press Start 2P', monospace;}
+    html,body{height:100%;margin:0;overflow:hidden;background:var(--bg-dark);color:var(--text);}
     body{
-      background-color:var(--bg-dark);
       background-image:
-        linear-gradient(var(--grid-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
       background-size:20px 20px;
-      color:var(--text);
-      font-family:'Press Start 2P',cursive;
-      margin:0;
-      height:100vh;
-      width:100vw;
-      overflow:hidden;
       display:flex;
     }
-    .custom-scroll{overflow-y:auto;scrollbar-width:thin;scrollbar-color:transparent transparent;transition:scrollbar-color .3s}
-    .custom-scroll:hover{scrollbar-color:#555 transparent}
-    .custom-scroll::-webkit-scrollbar{width:6px}
-    .custom-scroll::-webkit-scrollbar-track{background:transparent}
-    .custom-scroll::-webkit-scrollbar-thumb{background-color:transparent;border-radius:3px}
-    .custom-scroll:hover::-webkit-scrollbar-thumb{background-color:#555}
 
-    .main-wrapper{
-      display:flex;
-      width:100%;
-      height:100%;
-      padding:20px;
-      gap:20px;
-      overflow:hidden;
-      min-height:0;
-    }
-    .game-section{
-      flex:1 1 auto;
-      display:flex;
-      flex-direction:column;
-      height:100%;
-      overflow:hidden;
-      min-width:0;
-      min-height:0;
-    }
-    .social-sidebar{
-      width:var(--sidebar-width);
-      min-width:var(--sidebar-width);
-      display:flex;
-      flex-direction:column;
-      gap:15px;
-      height:100%;
-      overflow:hidden;
-      flex:0 0 var(--sidebar-width);
-      min-height:0;
-    }
-    .top-bar{
-      width:100%;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      margin-bottom:15px;
-      border-bottom:4px solid #333;
-      padding-bottom:15px;
-      flex-shrink:0;
-      flex-wrap:wrap;
-    }
-    h1{color:var(--accent);font-size:20px;text-shadow:3px 3px 0 #000;margin:0}
-    .settings-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-    select{
-      background:#000;color:#fff;border:2px solid #555;
-      padding:10px;font-family:'Press Start 2P';font-size:10px;cursor:pointer;text-transform:uppercase;
-    }
-    select:disabled{opacity:.35;cursor:not-allowed}
-    select:hover{border-color:var(--accent)}
+    .custom-scroll{overflow:auto; scrollbar-width:thin}
+    .custom-scroll::-webkit-scrollbar{width:6px;height:6px}
+    .custom-scroll::-webkit-scrollbar-thumb{background:#444}
+    .custom-scroll::-webkit-scrollbar-track{background:transparent}
+
+    .main{display:flex;width:100%;height:100%;padding:16px;gap:16px;min-height:0}
+    .game{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+    .side{width:var(--sidebar);min-width:var(--sidebar);display:flex;flex-direction:column;gap:12px;min-height:0}
+
+    .topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;padding-bottom:12px;border-bottom:3px solid #222}
+    h1{margin:0;color:var(--accent);font-size:18px;text-shadow:3px 3px 0 #000}
 
     .btn{
-      background:#2f3640;color:#fff;border:2px solid #000;
-      padding:10px 12px;font-size:10px;font-family:'Press Start 2P';
-      cursor:pointer;box-shadow:3px 3px 0 #000;
+      border:2px solid #000;background:#2f3640;color:#fff;
+      padding:10px 12px;font-size:10px;cursor:pointer;box-shadow:3px 3px 0 #000
     }
+    .btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
     .btn.yellow{background:var(--accent);color:#000}
     .btn.green{background:#2ecc71;color:#000}
-    .btn.red{background:#ff4757;color:#fff}
-    .btn.gray{background:#555;color:#fff}
-    .btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
+    .btn.gray{background:#555}
     .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #000}
 
     .pill{
-      background:#000;
-      border:2px solid #555;
-      padding:10px 12px;
-      font-size:10px;
-      color:#aaa;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      min-width:220px;
+      border:2px solid #333;background:#000;padding:10px 12px;font-size:10px;
+      display:flex;gap:14px;align-items:center;flex-wrap:wrap
     }
-    .pill b{color:#fff}
-    .pill .me{color:var(--accent)}
-    .pill .credits{color:#2ecc71}
+    .pill b{color:var(--accent)}
+    .pill .ok{color:#2ecc71}
 
-    .game-selector{
-      display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
-      margin-bottom:20px;background:#000;padding:10px;border:2px solid #333;border-radius:8px;
-      flex-shrink:0;
-    }
-    .game-tab{
-      background:#333;border:2px solid #555;color:#aaa;padding:10px 15px;
-      font-size:10px;font-family:'Press Start 2P';cursor:pointer;transition:all .2s;position:relative;top:0;
-    }
-    .game-tab:hover{background:#444;color:#fff;top:-2px}
-    .game-tab.active{background:var(--accent);color:#000;border-color:#fff;box-shadow:0 0 10px var(--accent);z-index:2}
-    .game-tab.locked{opacity:.5;pointer-events:none}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:14px 0 12px 0;padding:10px;background:#000;border:2px solid #222;border-radius:8px}
+    .tab{background:#222;color:#aaa;border:2px solid #333;padding:10px 14px;font-size:10px;cursor:pointer}
+    .tab.active{background:var(--accent);color:#000;border-color:#fff;box-shadow:0 0 10px rgba(254,202,87,.25)}
+    .tab.locked{opacity:.35;pointer-events:none}
 
-    .arena-container{
-      display:grid;
-      grid-template-columns:1fr 1.2fr 1fr;
-      gap:20px;
-      align-items:stretch;
-      flex-grow:1;
-      min-height:0;
-      padding:10px;
-      overflow:hidden;
+    .arena{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:14px}
+    .panel{
+      border:3px solid #000;background:var(--panel);box-shadow:4px 4px 0 #000;min-height:0;overflow:hidden
     }
-    .player-hud{
-      background:var(--bg-panel);
-      border:4px solid #000;
-      display:flex;
-      flex-direction:column;
-      position:relative;
-      box-shadow:4px 4px 0 #000;
-      height:100%;
-      z-index:1;
-      overflow:hidden;
+    .phead{
+      display:flex;gap:10px;align-items:center;justify-content:center;
+      padding:10px;border-bottom:3px solid #000;background:#222;font-size:11px
     }
-    .player-header{
-      padding:10px;
-      text-align:center;
-      border-bottom:4px solid #000;
-      font-size:12px;
-      height:46px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-      background:#333;
-      color:#fff;
-      gap:10px;
-    }
+    .avatarWrap{position:relative;display:flex;align-items:center;gap:10px}
     .avatar{
-      width:26px;height:26px;
-      border:2px solid #000;
-      background:#111;
-      box-shadow:2px 2px 0 #000;
-      image-rendering:pixelated;
-      display:grid;place-items:center;
-      font-family:'Rajdhani',sans-serif;
-      font-weight:900;
-      color:#fff;
-      font-size:14px;
+      width:28px;height:28px;border:2px solid #000;box-shadow:2px 2px 0 #000;
+      background:#111;image-rendering:pixelated;
     }
-    .avatar.a1{background:#6c5ce7}
-    .avatar.a2{background:#00b894}
-    .avatar.a3{background:#e17055}
-    .avatar.a4{background:#0984e3}
-    .avatar.a5{background:#d63031}
-    .avatar.a6{background:#2d3436}
+    .a1{background:#6c5ce7}.a2{background:#00b894}.a3{background:#e17055}.a4{background:#0984e3}.a5{background:#d63031}.a6{background:#2d3436}
 
-    .p1-hud.active-turn{border-color:var(--p1-color);box-shadow:0 0 20px var(--p1-color);z-index:10;transform:scale(1.01)}
-    .p2-hud.active-turn{border-color:var(--p2-color);box-shadow:0 0 20px var(--p2-color);z-index:10;transform:scale(1.01)}
-
-    .score-area{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-grow:1;min-height:0}
-    .score-display{font-size:60px;font-family:'Rajdhani',sans-serif;font-weight:700}
-    .match-point{font-size:10px;color:var(--accent);margin-top:5px;animation:blink 1s infinite;display:none}
-    @keyframes blink{50%{opacity:0}}
-
-    .controls-area{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      justify-content:center;
-      background:rgba(0,0,0,.2);
-      flex-shrink:0;
-      min-height:180px;
+    .bubble{
+      position:absolute;left:34px;top:-10px;
+      background:#000;border:2px solid #333;padding:6px 8px;font-size:10px;color:#fff;
+      box-shadow:2px 2px 0 #000;opacity:0;transform:translateY(4px);
+      transition:opacity .15s, transform .15s;pointer-events:none;
+      white-space:nowrap;
     }
-    .group{border:2px solid #333;background:#0b0b0f;padding:10px;display:flex;flex-direction:column;gap:8px}
-    .group-title{font-size:9px;color:#aaa}
-
-    .arcade-btn{
-      width:100%;
-      padding:12px 8px;
-      font-family:'Press Start 2P';
-      font-size:10px;
-      text-transform:uppercase;
-      border:2px solid #000;
-      cursor:pointer;
-      background:#444;
-      box-shadow:3px 3px 0 #000;
-    }
-    .arcade-btn:disabled{opacity:.25;cursor:not-allowed;filter:grayscale(1)}
-    .arcade-btn.p1{background:var(--p1-color);color:#fff}
-    .arcade-btn.p2{background:var(--p2-color);color:#fff}
-
-    .seat-btn{
-      width:100%;
-      padding:16px 10px;
-      background:#333;
-      color:#aaa;
-      border:2px dashed #666;
-      font-family:'Press Start 2P';
-      cursor:pointer;
-      font-size:10px;
-      text-transform:uppercase;
-    }
-    .seat-btn:hover{color:#fff;border-color:#fff;background:#444}
-
-    .center-stage{
-      background:#000;border:4px solid #333;display:flex;flex-direction:column;position:relative;
-      box-shadow:inset 0 0 20px rgba(0,0,0,.8);height:100%;
-    }
-    .round-tracker{
-      background:#222;color:#fff;text-align:center;padding:8px;font-size:12px;border-bottom:2px solid #444;
-      letter-spacing:2px;text-shadow:2px 2px 0 #000;flex-shrink:0
-    }
-    .marquee-status{
-      background:#111;border-bottom:2px solid #444;color:#888;text-align:center;
-      padding:10px;font-size:10px;letter-spacing:1px;min-height:35px;display:flex;align-items:center;justify-content:center;flex-shrink:0
-    }
-    .pot-line{
-      background:#0f0f0f;border-bottom:2px solid #333;color:var(--accent);
-      text-align:center;padding:10px;font-size:10px;letter-spacing:1px;
-      min-height:35px;display:none;align-items:center;justify-content:center;flex-shrink:0
-    }
-    .game-board{
-      flex-grow:1;display:flex;align-items:center;justify-content:center;
-      padding:20px;position:relative;overflow:hidden;perspective:1000px;min-height:0
-    }
-    .vs-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;font-weight:900;color:rgba(255,255,255,.03);font-family:'Rajdhani',sans-serif;pointer-events:none;z-index:0}
-
-    .sidebar-panel{background:var(--bg-panel);border:4px solid #000;display:flex;flex-direction:column;min-height:0;overflow:hidden;box-shadow:4px 4px 0 #000;flex-shrink:0}
-    .panel-header{
-      background:#2f3640;color:#fff;padding:8px 15px;font-size:10px;border-bottom:4px solid #000;
-      text-transform:uppercase;font-weight:bold;display:flex;justify-content:space-between;align-items:center;flex-shrink:0
-    }
-    .betting-panel{padding:15px;border-bottom:4px solid #000;background:#191919}
-    .betting-wrapper{position:relative;height:var(--betting-height);flex:0 0 var(--betting-height)}
-    .betting-overlay{
-      position:absolute;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,.85);z-index:10;
-      display:flex;align-items:center;justify-content:center;
-      color:#aaa;font-size:10px;text-align:center;padding:20px;line-height:1.5;
-    }
-    .wallet{text-align:center;color:var(--accent);margin-bottom:10px;font-size:10px}
-    .bet-label{font-size:8px;color:#666;margin-bottom:5px;text-align:center;text-transform:uppercase;letter-spacing:1px}
-    .bet-controls{display:flex;gap:5px;margin-bottom:10px}
-    .bet-btn{flex:1;font-size:8px;padding:12px 5px;border:2px solid #333;background:#222;color:#888;cursor:pointer;font-family:'Press Start 2P';transition:all .1s}
-    .bet-btn:hover{border-color:#666;color:#fff}
-    .bet-btn.selected{border-color:#fff;color:#000;box-shadow:0 0 10px rgba(255,255,255,.2)}
-    .bet-btn.p1.selected{background:var(--p1-color)}
-    .bet-btn.p2.selected{background:var(--p2-color)}
-    .bet-input{
-      width:100%;background:#000;border:2px solid #555;color:#fff;
-      padding:14px 10px;font-family:'Press Start 2P';font-size:12px;line-height:1.2;
-      text-align:center;margin-bottom:5px;height:48px;
-    }
-    .place-bet-btn{
-      width:100%;background:#2ecc71;color:#000;border:2px solid #000;padding:12px;font-family:'Press Start 2P';
-      cursor:pointer;font-size:10px;margin-top:5px
-    }
-    .place-bet-btn:disabled{background:#555;cursor:not-allowed}
-
-    .player-list-container{height:var(--players-height);flex:0 0 var(--players-height);min-height:0;display:flex;flex-direction:column}
-    .player-list{flex-grow:1;padding:0;background:#2f3640;overflow-y:auto;min-height:0}
-    .player-item{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:8px 12px;
-      border-bottom:1px solid #222;
-      font-size:16px;color:#fff;background:#2f3640;
-      font-family:'Rajdhani',sans-serif;font-weight:700;
-      gap:10px;
-      cursor:pointer;
-    }
-    .player-item:hover{background:#383f4d}
-    .player-name{flex-grow:1;display:flex;gap:10px;align-items:center}
-    .seatTag{font-size:11px;color:#aaa;border:1px solid #444;border-radius:999px;padding:1px 8px}
-    .voice-icon{color:rgba(255,255,255,.2);font-size:14px;transition:all .1s}
-    .voice-icon.speaking{color:#2ecc71;text-shadow:0 0 5px #2ecc71;transform:scale(1.1)}
-
-    .chat-container-box{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
-    .chat-inner{flex-grow:1;display:flex;flex-direction:column;background:#1e1e24;min-height:0;overflow:hidden}
-    .chat-log{flex-grow:1;padding:15px;font-size:14px;line-height:1.5;color:#ccc;font-family:'Rajdhani',sans-serif;font-weight:600;overflow-y:auto}
-    .chat-msg{margin-bottom:8px;word-wrap:break-word}
-    .chat-user{font-weight:800;margin-right:5px}
-    .chat-text{color:#eee}
-    .chat-input-area{display:flex;border-top:4px solid #000;flex-shrink:0}
-    .chat-input{
-      flex-grow:1;background:#000;border:none;color:#fff;
-      padding:15px;font-family:'Press Start 2P';
-      font-size:12px;line-height:1.2;
-      outline:none;height:52px;
+    .bubble.show{opacity:1;transform:translateY(0)}
+    .bubble:after{
+      content:"";position:absolute;left:8px;bottom:-8px;
+      border:8px solid transparent;border-top-color:#000;
+      filter:drop-shadow(2px 2px 0 #000);
     }
 
-    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;align-items:center;justify-content:center;padding:18px}
-    .modalInner{width:min(560px,92vw);background:#000;border:4px solid #333;padding:14px;box-shadow:6px 6px 0 #000}
-    .modalText{color:#ddd;font-family:'Rajdhani',sans-serif;font-size:16px;line-height:1.6;margin-top:10px}
-    .modalBtns{display:flex;gap:10px;margin-top:14px}
+    .scoreArea{display:flex;flex-direction:column;align-items:center;justify-content:center;height:220px}
+    .score{font-size:56px}
+    .turnTag{
+      margin-top:10px;border:2px solid #333;background:#000;padding:8px 10px;
+      font-size:10px;color:#aaa;display:none
+    }
+    .turnTag.show{display:inline-block}
+    .active1{border-color:var(--p1);box-shadow:0 0 16px rgba(255,71,87,.35)}
+    .active2{border-color:var(--p2);box-shadow:0 0 16px rgba(46,134,222,.35)}
 
-    .emote-pop{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;opacity:0;pointer-events:none;text-shadow:4px 4px 0 #000;transition:opacity .15s, transform .15s}
-    .emote-pop.show{opacity:1;transform:translate(-50%,-60%)}
+    .pcontrols{padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--panel2);border-top:3px solid #000}
+    .group{border:2px solid #222;background:#000;padding:10px;display:flex;flex-direction:column;gap:8px}
+    .gt{font-size:9px;color:#888}
+    select,input{
+      width:100%;background:#000;border:2px solid #333;color:#fff;padding:12px;font-size:10px
+    }
+    input{height:46px}
+    .seatBtn{border:2px dashed #666;background:#222;color:#aaa;padding:14px;font-size:10px;cursor:pointer}
+    .seatBtn:hover{border-color:#fff;color:#fff}
 
-    /* simple animations */
-    .pop{animation:pop .18s ease-out}
-    @keyframes pop{from{transform:scale(.95)}to{transform:scale(1)}}
-    .flip{animation:flip .6s ease-in-out}
+    .center{display:flex;flex-direction:column;height:100%}
+    .hdrLine{border-bottom:2px solid #222;background:#111;padding:10px;text-align:center;font-size:12px}
+    .statusLine{border-bottom:2px solid #222;background:#0d0d12;padding:10px;text-align:center;font-size:10px;color:#bbb;min-height:36px;display:flex;align-items:center;justify-content:center}
+    .potLine{border-bottom:2px solid #222;background:#0b0b10;padding:10px;text-align:center;font-size:10px;color:var(--accent);display:none;min-height:36px;align-items:center;justify-content:center}
+    .proposalLine{border-bottom:2px solid #222;background:#000;padding:10px;text-align:center;font-size:9px;color:#aaa;display:none}
+    .gameBox{flex:1;min-height:0;display:grid;place-items:center;background:#000;position:relative;overflow:hidden}
+    .pixelCard{border:3px solid #222;background:#0b0b10;box-shadow:6px 6px 0 #000;padding:18px;text-align:center}
+    .bigNum{font-size:40px;color:#fff}
+    .animShake{animation:shake .28s ease-in-out}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+    .animFlip{animation:flip .6s ease-in-out}
     @keyframes flip{0%{transform:rotateY(0)}50%{transform:rotateY(180deg)}100%{transform:rotateY(360deg)}}
-    .shake{animation:shake .35s ease-in-out}
-    @keyframes shake{
-      0%,100%{transform:translateX(0)}
-      25%{transform:translateX(-6px)}
-      50%{transform:translateX(6px)}
-      75%{transform:translateX(-4px)}
-    }
 
-    @media (max-width:950px){
-      body{overflow:auto;height:auto}
-      .main-wrapper{flex-direction:column;overflow:visible}
-      .social-sidebar{width:100%;min-width:auto;height:auto}
-      .chat-container-box{height:250px;flex-grow:0}
-      .arena-container{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
-      .center-stage{grid-column:1/-1;grid-row:1}
+    .sidePanel{border:3px solid #000;background:var(--panel);box-shadow:4px 4px 0 #000;overflow:hidden;min-height:0}
+    .sideHead{background:#222;border-bottom:3px solid #000;padding:10px 12px;font-size:10px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+    .betWrap{height:var(--betH);display:flex;flex-direction:column}
+    .betBody{padding:12px;background:#0b0b10;border-bottom:3px solid #000}
+    .betOverlay{
+      position:absolute;inset:0;background:rgba(0,0,0,.85);
+      display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font-size:10px;color:#aaa
+    }
+    .betBox{position:relative;flex:1}
+    .betBtn{width:100%;margin-top:8px}
+    .playersWrap{height:var(--playersH);display:flex;flex-direction:column;min-height:0}
+    .plist{flex:1;min-height:0;background:#222}
+    .pitem{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 12px;border-bottom:1px solid #111;cursor:pointer
+    }
+    .pitem:hover{background:#2b2b38}
+    .ptag{border:1px solid #444;border-radius:999px;padding:2px 8px;font-size:10px;color:#aaa}
+    .mic{opacity:.2}
+    .mic.on{opacity:1;color:#2ecc71;text-shadow:0 0 6px rgba(46,204,113,.5)}
+
+    .chatWrap{flex:1;min-height:0;display:flex;flex-direction:column}
+    .chatLog{flex:1;min-height:0;padding:12px;background:#0b0b10;font-size:10px;line-height:1.7}
+    .chatIn{display:flex;border-top:3px solid #000}
+    .chatInput{flex:1;border:none;outline:none;padding:14px;background:#000;color:#fff;font-size:10px;height:50px}
+
+    /* profile modal */
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;align-items:center;justify-content:center;padding:18px}
+    .modalInner{width:min(520px,92vw);background:#000;border:3px solid #333;box-shadow:8px 8px 0 #000;padding:14px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;font-size:12px;white-space:pre-wrap}
+    .xbtn{background:#555;color:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+
+    @media(max-width:1000px){
+      html,body{overflow:auto}
+      .main{flex-direction:column;height:auto;overflow:auto}
+      .side{width:100%;min-width:auto}
+      .arena{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+      .center{grid-column:1/-1}
     }
   </style>
 </head>
 
 <body>
-  <!-- BG MUSIC (needs /public/bg.mp3) -->
+  <!-- BGM: put bg.mp3 in /public -->
   <audio id="bgm" src="bg.mp3" loop preload="auto"></audio>
 
-<div class="main-wrapper">
-  <div class="game-section">
-    <div class="top-bar">
-      <div>
-        <h1>DUEL LIVE</h1>
-        <div class="pill" style="margin-top:10px">
-          <div><b class="me">YOU:</b> <span id="meName">-</span></div>
-          <div><b class="credits">CREDITS:</b> <span id="meCredits">0</span> TC</div>
+  <div class="main">
+    <div class="game">
+      <div class="topbar">
+        <div>
+          <h1>DUEL ARENA</h1>
+          <div class="pill" style="margin-top:10px">
+            <div><b>YOU:</b> <span id="meName">-</span></div>
+            <div><b>CREDITS:</b> <span id="meCredits" class="ok">0</span> TC</div>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn gray" onclick="location.reload()">REFRESH</button>
+          <button class="btn yellow" onclick="location.href='/support.html'">SUPPORT</button>
+          <button id="adminBtn" class="btn green" onclick="location.href='/admin.html'" style="display:none">ADMIN</button>
+          <button class="btn gray" onclick="logout()">LOGOUT</button>
         </div>
       </div>
 
-      <div class="settings-group">
-        <button class="btn gray" onclick="location.reload()">REFRESH</button>
-        <button class="btn yellow" onclick="location.href='/support.html'">SUPPORT</button>
-        <button id="adminBtn" class="btn green" onclick="location.href='/admin.html'" style="display:none">ADMIN</button>
-        <button class="btn gray" onclick="logout()">LOGOUT</button>
+      <div class="tabs" id="tabs">
+        <button class="tab active" id="tab-dice" onclick="pickGame('dice')">DICE</button>
+        <button class="tab" id="tab-coin" onclick="pickGame('coin')">COIN</button>
+        <button class="tab" id="tab-hl" onclick="pickGame('hl')">HI-LO</button>
+        <button class="tab" id="tab-roulette" onclick="pickGame('roulette')">ROULETTE</button>
+        <button class="tab" id="tab-rps" onclick="pickGame('rps')">R.P.S.</button>
+        <button class="tab" id="tab-ttt" onclick="pickGame('ttt')">TIC-TAC-TOE</button>
+      </div>
+
+      <div class="arena">
+        <!-- P1 -->
+        <div class="panel" id="p1Panel">
+          <div class="phead">
+            <div class="avatarWrap">
+              <div class="avatar a1" id="p1Avatar"></div>
+              <div class="bubble" id="p1Bubble">🔥</div>
+            </div>
+            <div id="p1Name">EMPTY</div>
+          </div>
+          <div class="scoreArea">
+            <div class="score" id="p1Score">0</div>
+            <div class="turnTag" id="p1Turn">YOUR TURN</div>
+          </div>
+          <div class="pcontrols" id="p1Controls"></div>
+        </div>
+
+        <!-- CENTER -->
+        <div class="panel center">
+          <div class="hdrLine" id="roundLine">ROUND 1</div>
+          <div class="statusLine" id="statusLine">WAITING FOR PLAYERS...</div>
+          <div class="potLine" id="potLine">POT: <span id="potAmt">0</span> TC</div>
+          <div class="proposalLine" id="proposalLine"></div>
+          <div class="gameBox" id="gameBox"></div>
+        </div>
+
+        <!-- P2 -->
+        <div class="panel" id="p2Panel">
+          <div class="phead">
+            <div class="avatarWrap">
+              <div class="avatar a1" id="p2Avatar"></div>
+              <div class="bubble" id="p2Bubble">🔥</div>
+            </div>
+            <div id="p2Name">EMPTY</div>
+          </div>
+          <div class="scoreArea">
+            <div class="score" id="p2Score">0</div>
+            <div class="turnTag" id="p2Turn">YOUR TURN</div>
+          </div>
+          <div class="pcontrols" id="p2Controls"></div>
+        </div>
       </div>
     </div>
 
-    <div class="game-selector" id="gameTabs">
-      <button class="game-tab active" id="tab-dice" onclick="tabPick('dice')">DICE</button>
-      <button class="game-tab" id="tab-coin" onclick="tabPick('coin')">COIN</button>
-      <button class="game-tab" id="tab-hl" onclick="tabPick('hl')">HI-LO</button>
-      <button class="game-tab" id="tab-roulette" onclick="tabPick('roulette')">ROULETTE</button>
-      <button class="game-tab" id="tab-rps" onclick="tabPick('rps')">R.P.S.</button>
-      <button class="game-tab" id="tab-ttt" onclick="tabPick('ttt')">TIC-TAC-TOE</button>
-    </div>
-
-    <div class="arena-container">
-      <div class="player-hud p1-hud" id="p1Panel">
-        <div class="player-header">
-          <div class="avatar" id="p1Avatar"></div>
-          <div id="p1Name">EMPTY</div>
-        </div>
-        <div class="score-area">
-          <div class="score-display" id="p1Score">0</div>
-          <div class="match-point" id="p1MatchPoint">MATCH POINT</div>
-        </div>
-        <div class="controls-area" id="p1Controls"></div>
-      </div>
-
-      <div class="center-stage">
-        <div class="round-tracker" id="roundTracker">ROUND <span>1</span></div>
-        <div class="marquee-status" id="status">WAITING FOR PLAYERS...</div>
-        <div class="pot-line" id="potLine">POT: <span id="potAmount">0</span> TC</div>
-
-        <div class="game-board" id="gameVisuals">
-          <div class="vs-badge">VS</div>
-          <div class="emote-pop" id="emotePop">🔥</div>
-          <div id="gameBox" style="z-index:10;text-align:center;"></div>
+    <!-- SIDEBAR -->
+    <div class="side">
+      <!-- spectator betting -->
+      <div class="sidePanel betWrap">
+        <div class="sideHead">SPECTATOR BETTING</div>
+        <div class="betBox" style="flex:1;position:relative">
+          <div class="betBody">
+            <div style="font-size:10px;color:var(--accent);text-align:center;margin-bottom:10px" id="wallet">WALLET: 0 TC</div>
+            <div style="font-size:9px;color:#777;text-align:center">CHOOSE SIDE</div>
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="bet1" onclick="selBet(1)" style="flex:1">BET SEAT 1</button>
+              <button class="btn" id="bet2" onclick="selBet(2)" style="flex:1">BET SEAT 2</button>
+            </div>
+            <input id="betAmt" type="number" placeholder="AMOUNT" min="1" style="margin-top:10px">
+            <button class="btn green betBtn" id="betGo" onclick="placeBet()">PLACE BET</button>
+            <div style="margin-top:10px;font-size:9px;color:#888;text-align:center" id="betStatus">No active bet</div>
+          </div>
+          <div class="betOverlay" id="betOverlay">WAITING FOR DUEL ACCEPT...</div>
         </div>
       </div>
 
-      <div class="player-hud p2-hud" id="p2Panel">
-        <div class="player-header">
-          <div class="avatar" id="p2Avatar"></div>
-          <div id="p2Name">EMPTY</div>
+      <!-- players online -->
+      <div class="sidePanel playersWrap">
+        <div class="sideHead">PLAYERS ONLINE</div>
+        <div class="plist custom-scroll" id="plist"></div>
+      </div>
+
+      <!-- chat -->
+      <div class="sidePanel chatWrap">
+        <div class="sideHead">LIVE CHAT</div>
+        <div class="chatLog custom-scroll" id="chatLog"></div>
+        <div class="chatIn">
+          <input class="chatInput" placeholder="Type here..." onkeypress="chatKey(event)">
         </div>
-        <div class="score-area">
-          <div class="score-display" id="p2Score">0</div>
-          <div class="match-point" id="p2MatchPoint">MATCH POINT</div>
-        </div>
-        <div class="controls-area" id="p2Controls"></div>
       </div>
     </div>
   </div>
 
-  <div class="social-sidebar">
-    <div class="sidebar-panel betting-wrapper">
-      <div class="panel-header">SPECTATOR BETTING</div>
-      <div class="betting-panel">
-        <div class="wallet" id="walletDisplay">WALLET: 0 TC</div>
-        <div class="bet-label">STEP 1: CHOOSE FIGHTER</div>
-        <div class="bet-controls">
-          <button class="bet-btn p1" onclick="selectBet(1)" id="betP1Btn">BET P1</button>
-          <button class="bet-btn p2" onclick="selectBet(2)" id="betP2Btn">BET P2</button>
-        </div>
-        <div class="bet-label" style="margin-top:10px;">STEP 2: WAGER</div>
-        <input type="number" id="betAmount" class="bet-input" placeholder="AMOUNT" min="1" max="1000000">
-        <button class="place-bet-btn" id="placeBetBtn" onclick="placeSpectatorBet()">PLACE BET</button>
-        <div id="betStatus" style="font-size:9px;text-align:center;color:#888;margin-top:5px;">No active bet</div>
+  <!-- PROFILE MODAL -->
+  <div class="modal" id="profileModal">
+    <div class="modalInner">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div style="color:var(--accent);font-size:12px">PLAYER PROFILE</div>
+        <button class="btn xbtn" onclick="closeProfile()">CLOSE</button>
       </div>
-      <div class="betting-overlay" id="betOverlay">WAITING FOR<br>DUEL ACCEPT...</div>
+      <div class="mono" id="profileText" style="margin-top:10px"></div>
     </div>
+  </div>
 
-    <div class="sidebar-panel player-list-container">
-      <div class="panel-header">PLAYERS ONLINE</div>
-      <div class="player-list custom-scroll" id="playerList"></div>
-    </div>
-
-    <div class="sidebar-panel chat-container-box">
-      <div class="panel-header">LIVE CHAT</div>
-      <div class="chat-inner">
-        <div class="chat-log custom-scroll" id="chatLog"></div>
-        <div class="chat-input-area">
-          <input type="text" class="chat-input" placeholder="Type here..." onkeypress="handleChat(event)">
-        </div>
+  <!-- PROPOSAL MODAL -->
+  <div class="modal" id="proposalModal">
+    <div class="modalInner">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div style="color:var(--accent);font-size:12px">MATCH PROPOSAL</div>
+        <button class="btn xbtn" onclick="closeProposal()">CLOSE</button>
+      </div>
+      <div class="mono" id="proposalText" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn green" style="flex:1" onclick="respond(true)">ACCEPT</button>
+        <button class="btn" style="flex:1;background:#ff4757" onclick="respond(false)">DECLINE</button>
       </div>
     </div>
   </div>
-</div>
-
-<div class="modal" id="proposalModal">
-  <div class="modalInner">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <div style="color:#feca57;font-size:12px">MATCH PROPOSAL</div>
-      <button class="btn gray" onclick="closeProposal()">CLOSE</button>
-    </div>
-    <div class="modalText" id="proposalText"></div>
-    <div class="modalBtns">
-      <button class="btn green" style="flex:1" onclick="respondProposal(true)">ACCEPT</button>
-      <button class="btn red" style="flex:1" onclick="respondProposal(false)">DECLINE</button>
-    </div>
-  </div>
-</div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  // deterrent only
+  // deterrent only (not real security)
   window.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if (e.ctrlKey && (k === 'u' || k === 's' || k === 'p')) e.preventDefault();
+    if (e.key === 'F12') e.preventDefault();
+    if (e.ctrlKey && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) e.preventDefault();
+  }, { capture:true });
 
-  // start bgm after first user interaction (browser rule)
+  // bgm at 5%
   const bgm = document.getElementById('bgm');
   bgm.volume = 0.05;
-  let bgmStarted = false;
-  window.addEventListener('pointerdown', () => {
-    if (bgmStarted) return;
-    bgmStarted = true;
-    bgm.play().catch(()=>{});
-  }, { once:true });
+  window.addEventListener('pointerdown', () => bgm.play().catch(()=>{}), { once:true });
+
+  const socket = io();
 
   let ME = null;
-  const socket = io();
-  let currentState = null;
+  let STATE = null;
 
-  const DOM = {
-    p1Panel: document.getElementById('p1Panel'),
-    p2Panel: document.getElementById('p2Panel'),
-    p1Ctrls: document.getElementById('p1Controls'),
-    p2Ctrls: document.getElementById('p2Controls'),
-    p1Score: document.getElementById('p1Score'),
-    p2Score: document.getElementById('p2Score'),
-    status: document.getElementById('status'),
-    round: document.getElementById('roundTracker'),
-    potLine: document.getElementById('potLine'),
-    potAmount: document.getElementById('potAmount'),
-    betOverlay: document.getElementById('betOverlay'),
-    p1Name: document.getElementById('p1Name'),
-    p2Name: document.getElementById('p2Name'),
-    p1Avatar: document.getElementById('p1Avatar'),
-    p2Avatar: document.getElementById('p2Avatar'),
-    chatLog: document.getElementById('chatLog'),
-    playerList: document.getElementById('playerList'),
-    emotePop: document.getElementById('emotePop'),
-    gameBox: document.getElementById('gameBox')
+  const UI = {
+    meName: el('meName'),
+    meCredits: el('meCredits'),
+    adminBtn: el('adminBtn'),
+    wallet: el('wallet'),
+
+    p1Panel: el('p1Panel'),
+    p2Panel: el('p2Panel'),
+    p1Name: el('p1Name'),
+    p2Name: el('p2Name'),
+    p1Avatar: el('p1Avatar'),
+    p2Avatar: el('p2Avatar'),
+    p1Bubble: el('p1Bubble'),
+    p2Bubble: el('p2Bubble'),
+    p1Turn: el('p1Turn'),
+    p2Turn: el('p2Turn'),
+    p1Score: el('p1Score'),
+    p2Score: el('p2Score'),
+    p1Controls: el('p1Controls'),
+    p2Controls: el('p2Controls'),
+
+    roundLine: el('roundLine'),
+    statusLine: el('statusLine'),
+    potLine: el('potLine'),
+    potAmt: el('potAmt'),
+    proposalLine: el('proposalLine'),
+
+    plist: el('plist'),
+    chatLog: el('chatLog'),
+
+    betOverlay: el('betOverlay'),
+    bet1: el('bet1'),
+    bet2: el('bet2'),
+    betAmt: el('betAmt'),
+    betGo: el('betGo'),
+    betStatus: el('betStatus'),
+
+    gameBox: el('gameBox'),
+
+    profileModal: el('profileModal'),
+    profileText: el('profileText'),
+    proposalModal: el('proposalModal'),
+    proposalText: el('proposalText')
   };
 
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+  function avatarClass(a){
+    return ({avatar1:'a1',avatar2:'a2',avatar3:'a3',avatar4:'a4',avatar5:'a5',avatar6:'a6'})[a] || 'a1';
   }
 
-  async function mustAuth(){
-    const me = await fetch('/api/credits').then(r=>r.json()).catch(()=>({}));
-    if(!me.ok){ location.href='/login.html'; return; }
-    ME = me;
-    document.getElementById('meName').innerText = me.username;
-    document.getElementById('meCredits').innerText = (me.credits ?? 0);
-    document.getElementById('walletDisplay').innerText = `WALLET: ${(me.credits ?? 0)} TC`;
-    if(me.isAdmin) document.getElementById('adminBtn').style.display='inline-block';
+  async function api(url, opt){
+    const r = await fetch(url, opt);
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error || "Request failed");
+    return j;
+  }
+
+  async function boot(){
+    try{
+      const me = await api('/api/credits');
+      ME = me;
+      UI.meName.textContent = me.username;
+      UI.meCredits.textContent = me.credits ?? 0;
+      UI.wallet.textContent = `WALLET: ${(me.credits ?? 0)} TC`;
+      if(me.isAdmin) UI.adminBtn.style.display='inline-block';
+      socket.emit('hello', { username: me.username });
+    }catch(e){
+      location.href='/login.html';
+    }
   }
 
   async function reloadCredits(){
-    const me = await fetch('/api/credits').then(r=>r.json()).catch(()=>null);
-    if(!me || !me.ok) return;
-    ME = me;
-    document.getElementById('meCredits').innerText = (me.credits ?? 0);
-    document.getElementById('walletDisplay').innerText = `WALLET: ${(me.credits ?? 0)} TC`;
+    try{
+      const me = await api('/api/credits');
+      ME = me;
+      UI.meCredits.textContent = me.credits ?? 0;
+      UI.wallet.textContent = `WALLET: ${(me.credits ?? 0)} TC`;
+      refreshBetAccess();
+    }catch{}
   }
 
   async function logout(){
     await fetch('/api/logout',{method:'POST'});
     location.href='/login.html';
+  }
+
+  function mySeat(){
+    if(!STATE?.room || !ME) return 0;
+    if(STATE.room.seat1 === ME.username) return 1;
+    if(STATE.room.seat2 === ME.username) return 2;
+    return 0;
+  }
+
+  function proposer(){
+    return STATE?.room?.proposer || null;
   }
 
   function roundsLabel(k){
@@ -549,318 +438,166 @@
       rt5:"RACE TO 5"
     })[k] || k;
   }
-  function roundsTarget(k){
-    return ({ sd1:1, bo3:2, bo5:3, rt3:3, rt5:5 })[k] || 1;
-  }
+  function roundsTarget(k){ return ({ sd1:1, bo3:2, bo5:3, rt3:3, rt5:5 })[k] || 1; }
 
-  function avatarClass(a){
-    const map = { avatar1:'a1', avatar2:'a2', avatar3:'a3', avatar4:'a4', avatar5:'a5', avatar6:'a6' };
-    return map[a] || 'a1';
-  }
-  function setAvatar(el, avatar){
-    el.className = 'avatar ' + avatarClass(avatar);
-    el.textContent = ' ';
-  }
-
-  function updateStatus(msg){ DOM.status.innerText = msg; }
-
-  function mySeat(){
-    if (!currentState?.room || !ME) return 0;
-    if (currentState.room.seat1 === ME.username) return 1;
-    if (currentState.room.seat2 === ME.username) return 2;
-    return 0;
-  }
-
-  function proposerName(){
-    return currentState?.room?.proposer || null;
-  }
-
-  // ---------- Match state ----------
-  const state = {
-    game: 'dice',
-    roundsKey: 'sd1',
-    proposedBet: 10,
-    turnSeat: 1, // ✅ turn is SEAT-based, not player-number-based
-    p1Score: 0,
-    p2Score: 0,
-    targetScore: 1,
-    isGameOver: false,
-    isBusy: false,
-    temp: {}
+  // -------- Match client state ----------
+  const M = {
+    game:'dice',
+    roundsKey:'sd1',
+    bet:10,
+    target:1,
+    turn:1,
+    p1:0,
+    p2:0,
+    busy:false,
+    over:false,
+    temp:{}
   };
 
+  function setStatus(t){ UI.statusLine.textContent = t; }
+  function setRoundLine(){ UI.roundLine.textContent = `ROUND ${M.p1 + M.p2 + 1}`; }
+
+  function showProposalSummary(){
+    const pr = STATE?.room?.proposal;
+    if(!pr){
+      UI.proposalLine.style.display='none';
+      UI.proposalLine.textContent='';
+      return;
+    }
+    UI.proposalLine.style.display='block';
+    UI.proposalLine.textContent =
+      `PROPOSAL: ${pr.game.toUpperCase()} | ${roundsLabel(pr.roundsKey)} | BET ${pr.bet} TC EACH | POT ${pr.bet*2} TC`;
+  }
+
+  function setPot(){
+    const pot = STATE?.room?.pot || 0;
+    if(pot>0){
+      UI.potLine.style.display='flex';
+      UI.potAmt.textContent = pot;
+    }else{
+      UI.potLine.style.display='none';
+    }
+  }
+
+  function applyTurnUI(){
+    UI.p1Panel.classList.toggle('active1', M.turn===1 && !M.over);
+    UI.p2Panel.classList.toggle('active2', M.turn===2 && !M.over);
+    UI.p1Turn.classList.toggle('show', M.turn===1 && mySeat()===1 && !M.over);
+    UI.p2Turn.classList.toggle('show', M.turn===2 && mySeat()===2 && !M.over);
+
+    // opponent also sees a clear indicator
+    // show "OPPONENT TURN" tag for the other side
+    if(mySeat()===1){
+      UI.p2Turn.textContent = (M.turn===2 && !M.over) ? "OPPONENT TURN" : " ";
+      UI.p2Turn.classList.toggle('show', M.turn===2 && !M.over);
+      UI.p1Turn.textContent = "YOUR TURN";
+    } else if(mySeat()===2){
+      UI.p1Turn.textContent = (M.turn===1 && !M.over) ? "OPPONENT TURN" : " ";
+      UI.p1Turn.classList.toggle('show', M.turn===1 && !M.over);
+      UI.p2Turn.textContent = "YOUR TURN";
+    } else {
+      // spectators just see turn highlight; no tags needed
+      UI.p1Turn.classList.remove('show');
+      UI.p2Turn.classList.remove('show');
+      UI.p1Turn.textContent="YOUR TURN";
+      UI.p2Turn.textContent="YOUR TURN";
+    }
+
+    // critical: enable/disable the ACTION button properly
+    syncActionButton();
+  }
+
+  function canAct(){
+    if(!STATE?.room?.settingsLocked) return false;
+    if(M.over || M.busy) return false;
+    const seat = mySeat();
+    if(!seat) return false;
+    return seat === M.turn;
+  }
+
+  // We store the current action button id (per game)
+  let currentActionBtnId = null;
+  function syncActionButton(){
+    if(!currentActionBtnId) return;
+    const btn = document.getElementById(currentActionBtnId);
+    if(!btn) return;
+    btn.disabled = !canAct();
+  }
+
   function resetMatch(){
-    state.p1Score = 0;
-    state.p2Score = 0;
-    state.turnSeat = 1;
-    state.isGameOver = false;
-    state.isBusy = false;
-    state.temp = {};
-    updateUI();
+    M.p1=0; M.p2=0; M.turn=1; M.over=false; M.busy=false; M.temp={};
+    UI.p1Score.textContent = "0";
+    UI.p2Score.textContent = "0";
+    setRoundLine();
+    applyTurnUI();
   }
 
-  function updateUI(){
-    DOM.p1Score.innerText = state.p1Score;
-    DOM.p2Score.innerText = state.p2Score;
-    DOM.round.innerHTML = `ROUND <span>${state.p1Score + state.p2Score + 1}</span>`;
-    document.getElementById('p1MatchPoint').style.display = (state.p1Score === state.targetScore - 1 && state.targetScore > 1) ? 'block' : 'none';
-    document.getElementById('p2MatchPoint').style.display = (state.p2Score === state.targetScore - 1 && state.targetScore > 1) ? 'block' : 'none';
+  function award(seat){
+    if(M.over) return;
+    if(seat===1) M.p1++; else M.p2++;
+    UI.p1Score.textContent = String(M.p1);
+    UI.p2Score.textContent = String(M.p2);
+    setRoundLine();
+
+    if(M.p1>=M.target){ endGame(1); return; }
+    if(M.p2>=M.target){ endGame(2); return; }
   }
 
-  function updateTurn(seat){
-    if(state.isGameOver) return;
-    state.turnSeat = seat;
-    DOM.p1Panel.classList.toggle('active-turn', seat === 1);
-    DOM.p2Panel.classList.toggle('active-turn', seat === 2);
-    renderGameControls(); // ✅ opponent can click now (based on mySeat/turnSeat)
-  }
-
-  function awardPoint(seat){
-    if (state.isGameOver) return;
-    if (seat === 1) state.p1Score++; else state.p2Score++;
-    updateUI();
-    if (state.p1Score >= state.targetScore) endGame(1);
-    else if (state.p2Score >= state.targetScore) endGame(2);
-  }
-
-  function endGame(winnerSeat){
-    state.isGameOver = true;
-    DOM.p1Panel.classList.remove('active-turn');
-    DOM.p2Panel.classList.remove('active-turn');
-    DOM.round.innerHTML = `MATCH OVER`;
-
-    DOM.gameBox.innerHTML = `
-      <div class="pop" style="background:#000;padding:18px;border:2px solid #333">
-        <div style="color:var(--accent);margin-bottom:10px;font-size:10px">MATCH COMPLETE</div>
-        <div style="color:${winnerSeat===1?'var(--p1-color)':'var(--p2-color)'};font-size:28px;font-family:'Rajdhani',sans-serif;font-weight:900">
-          SEAT ${winnerSeat} WINS!
-        </div>
-        <div style="color:#aaa;font-size:10px;margin-top:10px;line-height:1.5">
-          Seats will clear automatically...
-        </div>
+  function endGame(winner){
+    M.over = true;
+    applyTurnUI();
+    UI.gameBox.innerHTML = `
+      <div class="pixelCard">
+        <div style="color:var(--accent);font-size:10px;margin-bottom:10px">MATCH COMPLETE</div>
+        <div class="bigNum" style="color:${winner===1?'var(--p1)':'var(--p2)'}">SEAT ${winner} WINS!</div>
+        <div style="margin-top:10px;font-size:9px;color:#888">SEATS CLEARING...</div>
       </div>
     `;
-    updateStatus("WINNER DECLARED!");
-    setTimeout(()=>socket.emit('match:ended'), 2500);
+    setStatus("WINNER DECLARED!");
+    setTimeout(()=>socket.emit('match:ended'), 2000);
   }
 
-  // ---------- Socket state ----------
-  socket.on('state', (s) => {
-    currentState = s;
-
-    DOM.p1Name.innerText = s.room.seat1 ? s.room.seat1 : "EMPTY";
-    DOM.p2Name.innerText = s.room.seat2 ? s.room.seat2 : "EMPTY";
-
-    const p1 = s.players.find(p => p.username === s.room.seat1);
-    const p2 = s.players.find(p => p.username === s.room.seat2);
-    setAvatar(DOM.p1Avatar, p1?.avatar || "avatar1");
-    setAvatar(DOM.p2Avatar, p2?.avatar || "avatar1");
-
-    // pot in game area
-    if (s.room.pot > 0) {
-      DOM.potLine.style.display = 'flex';
-      DOM.potAmount.innerText = s.room.pot;
-    } else {
-      DOM.potLine.style.display = 'none';
-    }
-
-    // betting overlay: only open when locked
-    DOM.betOverlay.style.display = s.room.settingsLocked ? 'none' : 'flex';
-
-    // game tab lock: only proposer can pick game BEFORE accept
-    const isMeProposer = (ME && s.room.proposer === ME.username);
-    document.querySelectorAll('.game-tab').forEach(t => {
-      t.classList.toggle('locked', !isMeProposer || s.room.settingsLocked);
-    });
-
-    renderSeatControls();
-    renderPlayers(s.players);
-
-    // status text
-    if (!s.room.seat1 && !s.room.seat2) updateStatus("WAITING FOR PLAYERS...");
-    else if (s.room.seat1 && !s.room.seat2) updateStatus(`${s.room.proposer || 'FIRST'} MUST WAIT FOR OPPONENT...`);
-    else if (!s.room.settingsLocked && s.room.seat1 && s.room.seat2) {
-      updateStatus(`${s.room.proposer} MUST PROPOSE MATCH...`);
-    }
-  });
-
-  socket.on('chat', (m) => addChat(m));
-
-  socket.on('proposal:incoming', ({ to, proposal }) => {
-    if (!ME || ME.username !== to) return;
-    document.getElementById('proposalText').innerHTML =
-      `<b>FROM:</b> ${escapeHtml(proposal.by)}<br>
-       <b>GAME:</b> ${escapeHtml(proposal.game.toUpperCase())}<br>
-       <b>ROUNDS:</b> ${escapeHtml(roundsLabel(proposal.roundsKey))}<br>
-       <b>BET:</b> ${proposal.bet} TC (EACH)<br>
-       <b>POT:</b> ${proposal.bet * 2} TC`;
-    document.getElementById('proposalModal').style.display='flex';
-  });
-
-  socket.on('proposal:error', (e) => alert(e?.error || "Proposal failed"));
-
-  socket.on('proposal:result', async (r) => {
-    await reloadCredits();
-    if (!r.ok && r.error) alert(r.error);
-    if (r.ok && r.accepted === false) updateStatus("PROPOSAL DECLINED.");
-  });
-
-  socket.on('match:started', async ({ proposal, pot }) => {
-    await reloadCredits();
-
-    state.game = proposal.game;
-    state.targetScore = roundsTarget(proposal.roundsKey);
-    state.roundsKey = proposal.roundsKey;
-
-    resetMatch();
-    setGame(state.game);
-    updateStatus(`MATCH STARTED: ${proposal.game.toUpperCase()} | ${roundsLabel(proposal.roundsKey)} | POT ${pot} TC`);
-    updateTurn(1);
-  });
-
-  socket.on("credits:updated", ({ username, credits }) => {
-    if (!ME || ME.username !== username) return;
-    ME.credits = credits ?? 0;
-    document.getElementById('meCredits').innerText = (ME.credits ?? 0);
-    document.getElementById('walletDisplay').innerText = `WALLET: ${(ME.credits ?? 0)} TC`;
-  });
-
-  socket.on('duel:emote', ({ from, emote }) => {
-    DOM.emotePop.textContent = emote;
-    DOM.emotePop.classList.add('show');
-    setTimeout(()=>DOM.emotePop.classList.remove('show'), 700);
-  });
-
-  // ---------- Player click shows credits ----------
-  async function onPlayerClick(p){
-    const r = await fetch('/api/player/' + encodeURIComponent(p.username));
-    const j = await r.json().catch(()=>({}));
-    if(!r.ok){ alert(j.error || "Failed"); return; }
-    alert(`PLAYER: ${j.username}\nCREDITS: ${j.credits} TC`);
-  }
-
-  function renderPlayers(list){
-    DOM.playerList.innerHTML = '';
-    list.forEach(p=>{
-      const item = document.createElement('div');
-      item.className='player-item';
-      item.onclick = ()=>onPlayerClick(p);
-
-      const left = document.createElement('div');
-      left.className='player-name';
-
-      const av = document.createElement('div');
-      av.className = 'avatar ' + avatarClass(p.avatar);
-      av.textContent = ' ';
-      left.appendChild(av);
-
-      const nm = document.createElement('div');
-      nm.textContent = p.username;
-      left.appendChild(nm);
-
-      if (p.username === currentState?.room?.proposer) {
-        const tag = document.createElement('div');
-        tag.className = 'seatTag';
-        tag.textContent = `PROPOSER`;
-        left.appendChild(tag);
-      } else if (p.seat === 1 || p.seat === 2) {
-        const tag = document.createElement('div');
-        tag.className = 'seatTag';
-        tag.textContent = `SEAT ${p.seat}`;
-        left.appendChild(tag);
-      }
-
-      const mic = document.createElement('i');
-      mic.className='fas fa-microphone voice-icon' + (p.speaking ? ' speaking' : '');
-
-      item.appendChild(left);
-      item.appendChild(mic);
-      DOM.playerList.appendChild(item);
-    });
-  }
-
-  // ---------- Chat ----------
-  function addChat({user,text}){
-    const div = document.createElement('div');
-    div.className='chat-msg';
-    div.innerHTML = `<span class="chat-user" style="color:#feca57">${escapeHtml(user)}:</span> <span class="chat-text">${escapeHtml(text)}</span>`;
-    DOM.chatLog.appendChild(div);
-    DOM.chatLog.scrollTop = DOM.chatLog.scrollHeight;
-  }
-
-  function handleChat(e){
-    if(e.key==='Enter'){
-      const txt = e.target.value;
-      if(!txt.trim()) return;
-      socket.emit('chat', txt.trim());
-      e.target.value='';
-    }
-  }
-
-  // ---------- Proposal modal ----------
-  function closeProposal(){ document.getElementById('proposalModal').style.display='none'; }
-  function respondProposal(accept){
-    closeProposal();
-    socket.emit('proposal:respond', { accept: !!accept });
-  }
-
-  // ---------- Seats / Avatar / Emotes ----------
-  function takeSeat(seat){ socket.emit('takeSeat', { seat }); }
-  function leaveSeat(){ socket.emit('leaveSeat'); }
-
-  async function setMyAvatar(avatar){
-    const r = await fetch('/api/avatar', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ avatar })
-    });
-    const j = await r.json().catch(()=>({}));
-    if(!r.ok){ alert(j.error || 'Failed'); return; }
-    await reloadCredits();
-    socket.emit('hello', { username: ME.username });
-  }
-
-  function sendEmote(emote){ socket.emit('duel:emote', { emote }); }
-
+  // -------- Seat controls / avatar / propose ----------
   function renderSeatControls(){
-    const s = currentState?.room;
-    if (!s || !ME) return;
+    const r = STATE?.room;
+    if(!r || !ME) return;
 
-    const iAmSeat1 = s.seat1 === ME.username;
-    const iAmSeat2 = s.seat2 === ME.username;
-    const iAmSeated = iAmSeat1 || iAmSeat2;
-    const locked = !!s.settingsLocked;
+    UI.p1Controls.innerHTML = '';
+    UI.p2Controls.innerHTML = '';
 
-    DOM.p1Ctrls.innerHTML = '';
-    DOM.p2Ctrls.innerHTML = '';
+    const i1 = r.seat1 === ME.username;
+    const i2 = r.seat2 === ME.username;
 
-    if (!s.seat1) DOM.p1Ctrls.innerHTML = `<button class="seat-btn" onclick="takeSeat(1)">TAKE SEAT 1</button>`;
-    else if (iAmSeat1) DOM.p1Ctrls.appendChild(seatedPanel(locked));
-    else DOM.p1Ctrls.innerHTML = `<div style="color:#aaa;font-size:10px;text-align:center;padding:10px">SEATED</div>`;
+    if(!r.seat1) UI.p1Controls.innerHTML = `<button class="seatBtn" onclick="takeSeat(1)">TAKE SEAT 1</button>`;
+    else if(i1) UI.p1Controls.appendChild(seatedPanel());
+    else UI.p1Controls.innerHTML = `<div style="padding:10px;color:#888;font-size:10px;text-align:center">SEATED</div>`;
 
-    if (!s.seat2) DOM.p2Ctrls.innerHTML = `<button class="seat-btn" onclick="takeSeat(2)">TAKE SEAT 2</button>`;
-    else if (iAmSeat2) DOM.p2Ctrls.appendChild(seatedPanel(locked));
-    else DOM.p2Ctrls.innerHTML = `<div style="color:#aaa;font-size:10px;text-align:center;padding:10px">SEATED</div>`;
-
-    renderGameControls();
+    if(!r.seat2) UI.p2Controls.innerHTML = `<button class="seatBtn" onclick="takeSeat(2)">TAKE SEAT 2</button>`;
+    else if(i2) UI.p2Controls.appendChild(seatedPanel());
+    else UI.p2Controls.innerHTML = `<div style="padding:10px;color:#888;font-size:10px;text-align:center">SEATED</div>`;
   }
 
-  function seatedPanel(locked){
+  function seatedPanel(){
+    const r = STATE.room;
+    const isMeProposer = proposer() === ME.username;
+    const locked = !!r.settingsLocked;
+    const both = !!(r.seat1 && r.seat2);
+
     const wrap = document.createElement('div');
 
     const g0 = document.createElement('div');
-    g0.className = 'group';
-    g0.innerHTML = `<div class="group-title">SEAT ACTIONS</div>`;
-    const leaveBtn = document.createElement('button');
-    leaveBtn.className = 'arcade-btn';
-    leaveBtn.textContent = 'LEAVE SEAT';
-    leaveBtn.onclick = ()=>leaveSeat();
-    g0.appendChild(leaveBtn);
+    g0.className='group';
+    g0.innerHTML = `<div class="gt">SEAT ACTIONS</div>`;
+    const leave = document.createElement('button');
+    leave.className='btn';
+    leave.textContent='LEAVE SEAT';
+    leave.onclick = ()=>socket.emit('leaveSeat');
+    g0.appendChild(leave);
     wrap.appendChild(g0);
 
     const g1 = document.createElement('div');
-    g1.className = 'group';
-    g1.innerHTML = `<div class="group-title">AVATAR</div>`;
+    g1.className='group';
+    g1.innerHTML = `<div class="gt">CUSTOM AVATAR</div>`;
     const sel = document.createElement('select');
     sel.innerHTML = `
       <option value="avatar1">AVATAR 1</option>
@@ -871,41 +608,24 @@
       <option value="avatar6">AVATAR 6</option>
     `;
     sel.value = ME.avatar || "avatar1";
-    sel.onchange = ()=>setMyAvatar(sel.value);
+    sel.disabled = locked;
+    sel.onchange = async ()=>{
+      await api('/api/avatar', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ avatar: sel.value })
+      });
+      await reloadCredits();
+      socket.emit('hello', { username: ME.username }); // refresh online avatar
+    };
     g1.appendChild(sel);
     wrap.appendChild(g1);
 
-    const gE = document.createElement('div');
-    gE.className = 'group';
-    gE.innerHTML = `<div class="group-title">DUEL EMOTES</div>`;
-    const emWrap = document.createElement('div');
-    emWrap.style.display='flex'; emWrap.style.gap='8px'; emWrap.style.flexWrap='wrap';
+    const g2 = document.createElement('div');
+    g2.className='group';
+    g2.innerHTML = `<div class="gt">${isMeProposer ? 'YOU PROPOSE MATCH' : 'WAITING PROPOSAL'}</div>`;
 
-    const isSeated = mySeat() !== 0;
-    const canEmote = isSeated && currentState?.room?.settingsLocked;
-
-    ["😈","😂","🔥","💀","😤","😎"].forEach(e=>{
-      const b = document.createElement('button');
-      b.className = 'arcade-btn';
-      b.style.width='auto';
-      b.style.padding='10px 10px';
-      b.textContent = e;
-      b.disabled = !canEmote;
-      b.onclick = ()=>sendEmote(e);
-      emWrap.appendChild(b);
-    });
-    gE.appendChild(emWrap);
-    wrap.appendChild(gE);
-
-    // proposer controls
-    const isMeProposer = proposerName() === ME.username;
-    const bothSeated = !!(currentState?.room?.seat1 && currentState?.room?.seat2);
-
-    if (isMeProposer) {
-      const g2 = document.createElement('div');
-      g2.className = 'group';
-      g2.innerHTML = `<div class="group-title">MATCH SETTINGS (YOU PROPOSE)</div>`;
-
+    if(isMeProposer){
       const roundSel = document.createElement('select');
       roundSel.innerHTML = `
         <option value="sd1">1 ROUND (SUDDEN DEATH)</option>
@@ -914,360 +634,594 @@
         <option value="rt3">RACE TO 3</option>
         <option value="rt5">RACE TO 5</option>
       `;
-      roundSel.value = state.roundsKey || 'sd1';
+      roundSel.value = M.roundsKey;
+      roundSel.disabled = locked || !both;
 
-      const betInput = document.createElement('input');
-      betInput.className = 'bet-input';
-      betInput.placeholder = "BET AMOUNT";
-      betInput.type = "number";
-      betInput.min = "1";
-      betInput.value = String(state.proposedBet || 10);
-      betInput.style.margin = "0";
-      betInput.style.height = "48px";
+      const bet = document.createElement('input');
+      bet.type='number';
+      bet.min='1';
+      bet.placeholder='BET AMOUNT';
+      bet.value = String(M.bet);
+      bet.disabled = locked || !both;
 
-      const proposeBtn = document.createElement('button');
-      proposeBtn.className = 'arcade-btn p1';
-      proposeBtn.textContent = "PROPOSE MATCH";
-
-      proposeBtn.disabled = locked || !bothSeated;
-
-      proposeBtn.onclick = ()=>{
-        state.roundsKey = roundSel.value;
-        state.proposedBet = parseInt(betInput.value,10) || 1;
-        socket.emit('proposal:create', { game: state.game || 'dice', roundsKey: state.roundsKey, bet: state.proposedBet });
+      const go = document.createElement('button');
+      go.className='btn yellow';
+      go.textContent='PROPOSE';
+      go.disabled = locked || !both;
+      go.onclick = ()=>{
+        M.roundsKey = roundSel.value;
+        M.bet = parseInt(bet.value,10) || 1;
+        socket.emit('proposal:create', { game:M.game, roundsKey:M.roundsKey, bet:M.bet });
       };
 
-      roundSel.disabled = locked || !bothSeated;
-      betInput.disabled = locked || !bothSeated;
-
       g2.appendChild(roundSel);
-      g2.appendChild(betInput);
-      g2.appendChild(proposeBtn);
-      wrap.appendChild(g2);
+      g2.appendChild(bet);
+      g2.appendChild(go);
     } else {
-      const g3 = document.createElement('div');
-      g3.className = 'group';
-      g3.innerHTML = `<div class="group-title">MATCH SETTINGS</div>
-        <div style="font-size:12px;color:#bbb;font-family:Rajdhani,sans-serif;line-height:1.6">
-          Waiting for proposer.<br>
-          You will receive ACCEPT / DECLINE.
-        </div>`;
-      wrap.appendChild(g3);
+      const t = document.createElement('div');
+      t.style.fontSize='9px';
+      t.style.color='#888';
+      t.textContent = 'You will receive ACCEPT / DECLINE.';
+      g2.appendChild(t);
     }
+
+    wrap.appendChild(g2);
+
+    const g3 = document.createElement('div');
+    g3.className='group';
+    g3.innerHTML = `<div class="gt">DUEL EMOTES</div>`;
+    const row = document.createElement('div');
+    row.className='row';
+    ["😈","😂","🔥","💀","😤","😎"].forEach(e=>{
+      const b = document.createElement('button');
+      b.className='btn';
+      b.textContent=e;
+      b.disabled = !STATE.room.settingsLocked; // only after match started
+      b.onclick = ()=>socket.emit('duel:emote', { emote:e });
+      row.appendChild(b);
+    });
+    g3.appendChild(row);
+    wrap.appendChild(g3);
 
     return wrap;
   }
 
-  // ---------- Game selection ----------
-  function tabPick(type){
-    const s = currentState?.room;
-    if (!s || !ME) return;
-    if (s.settingsLocked) return;
-    if (s.proposer !== ME.username) return; // ✅ proposer only
-    setGame(type);
+  function takeSeat(seat){ socket.emit('takeSeat', { seat }); }
+
+  // -------- Game selection ----------
+  function pickGame(g){
+    if(!STATE?.room || !ME) return;
+    if(STATE.room.settingsLocked) return;
+    if(proposer() !== ME.username) return;
+    setGame(g);
   }
 
-  // ---------- Games ----------
-  function setGame(type){
-    state.game = type;
-
-    document.querySelectorAll('.game-tab').forEach(t=>t.classList.remove('active'));
-    const tab = document.getElementById(`tab-${type}`);
-    if (tab) tab.classList.add('active');
-
-    DOM.gameBox.innerHTML = '';
-    if (!currentState?.room?.settingsLocked) {
-      updateStatus(`${proposerName() || "FIRST"} MUST PROPOSE MATCH...`);
-      return;
-    }
-
-    if (type === 'dice') setupDice();
-    else if (type === 'coin') setupCoin();
-    else if (type === 'hl') setupHiLo();
-    else if (type === 'roulette') setupRoulette();
-    else if (type === 'rps') setupRPS();
-    else setupPlaceholder(type);
-
-    renderGameControls();
+  function lockTabs(){
+    const locked = !!STATE?.room?.settingsLocked;
+    const isMeProposer = proposer() === ME?.username;
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.classList.toggle('locked', locked || !isMeProposer);
+    });
   }
 
-  function canPressNow(){
-    if (!currentState?.room?.settingsLocked) return false;
-    if (state.isGameOver || state.isBusy) return false;
-    const seat = mySeat();
-    if (!seat) return false;
-    return seat === state.turnSeat;
+  function setGame(g){
+    M.game = g;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    const tab = document.getElementById(`tab-${g}`);
+    if(tab) tab.classList.add('active');
+    if(STATE?.room?.settingsLocked) renderGame();
   }
 
-  function renderGameControls(){
-    // controls live inside game area; seat panels are for seat/proposal/emotes
-    if (!currentState?.room?.settingsLocked) return;
+  // -------- Games (pixel + proper animations + correct turn enabling) ----------
+  function renderGame(){
+    currentActionBtnId = null;
+    UI.gameBox.innerHTML = '';
 
-    const seat = mySeat();
-    const turn = state.turnSeat;
+    if(M.game === 'hl') renderHL();
+    else if(M.game === 'dice') renderDice();
+    else if(M.game === 'coin') renderCoin();
+    else if(M.game === 'roulette') renderRoulette();
+    else if(M.game === 'rps') renderRPS();
+    else renderPlaceholder();
 
-    // just show a small status button area depending on game
-    // game-specific buttons are rendered by game setup, but we keep a safety disable by checking canPressNow() inside handlers
-    DOM.p1Panel.classList.toggle('active-turn', turn === 1);
-    DOM.p2Panel.classList.toggle('active-turn', turn === 2);
-
-    if (seat === 0) return;
+    applyTurnUI(); // critical
   }
 
-  function setupPlaceholder(type){
-    DOM.gameBox.innerHTML = `
-      <div class="pop" style="background:#000;padding:16px;border:2px solid #333">
-        <div style="color:#feca57;font-size:10px;margin-bottom:10px">${type.toUpperCase()}</div>
-        <div style="color:#aaa;font-size:10px;line-height:1.6">(Animation + gameplay placeholder)</div>
+  function renderPlaceholder(){
+    UI.gameBox.innerHTML = `<div class="pixelCard"><div style="color:var(--accent);font-size:10px;margin-bottom:10px">${esc(M.game.toUpperCase())}</div><div style="font-size:9px;color:#888">PIXEL MODE</div></div>`;
+  }
+
+  function setActionBtn(btnId){
+    currentActionBtnId = btnId;
+    syncActionButton();
+  }
+
+  // HI-LO (matches your screenshot)
+  function renderHL(){
+    UI.gameBox.innerHTML = `
+      <div class="pixelCard" style="width:min(420px,90%)">
+        <div id="cardBox" class="pixelCard" style="margin:0 auto;width:180px;height:240px;display:grid;place-items:center">
+          <div id="cardNum" class="bigNum">?</div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn" id="btnDraw">DRAW</button>
       </div>
     `;
+    setActionBtn('btnDraw');
+
+    const cardBox = document.getElementById('cardBox');
+    const cardNum = document.getElementById('cardNum');
+
+    document.getElementById('btnDraw').onclick = () => {
+      if(!canAct()) return;
+      M.busy = true; syncActionButton();
+
+      cardBox.classList.remove('animShake'); void cardBox.offsetWidth; cardBox.classList.add('animShake');
+
+      setTimeout(()=>{
+        const v = 1 + Math.floor(Math.random()*13);
+        cardNum.textContent = String(v);
+
+        if(M.turn===1){
+          M.temp.p1 = v;
+          setStatus(`SEAT 1 DREW ${v}. SEAT 2 TURN.`);
+          M.turn = 2;
+        } else {
+          const p1 = M.temp.p1 ?? 0;
+          setStatus(`SEAT 1: ${p1} vs SEAT 2: ${v}`);
+          if(p1>v){ setStatus("SEAT 1 WINS ROUND!"); award(1); }
+          else if(v>p1){ setStatus("SEAT 2 WINS ROUND!"); award(2); }
+          else setStatus("DRAW! DRAW AGAIN.");
+          M.turn = 1;
+        }
+
+        M.busy = false;
+        applyTurnUI();
+      }, 320);
+    };
   }
 
   // DICE
-  function createDie(v){
-    return `<div class="die" v="${v}">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>`;
-  }
-  function renderDice(el, arr){
-    el.innerHTML = arr.map(createDie).join('');
-  }
-  function r6(){ return Math.ceil(Math.random()*6); }
-
-  function setupDice(){
-    DOM.gameBox.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:18px;align-items:center">
-        <div id="diceRow" style="display:flex;gap:10px"></div>
-        <button class="btn" id="actionBtn">ROLL</button>
-        <div style="color:#aaa;font-size:10px;font-family:Rajdhani,sans-serif">Only the player whose turn can roll.</div>
+  function renderDice(){
+    UI.gameBox.innerHTML = `
+      <div class="pixelCard" style="width:min(420px,90%)">
+        <div id="diceRow" class="row" style="justify-content:center;margin:10px 0"></div>
+        <button class="btn" id="btnRoll">ROLL</button>
       </div>
     `;
-    const row = document.getElementById('diceRow');
-    renderDice(row,[1,1,1]);
+    setActionBtn('btnRoll');
 
-    document.getElementById('actionBtn').onclick = () => {
-      if (!canPressNow()) return;
-      state.isBusy = true;
-      row.classList.add('shake');
+    const row = document.getElementById('diceRow');
+    const mkDie = (n)=>`<div class="pixelCard" style="width:70px;height:70px;display:grid;place-items:center"><div class="bigNum" style="font-size:28px">${n}</div></div>`;
+    const setDice = (a)=>row.innerHTML = a.map(mkDie).join('');
+
+    setDice([1,1,1]);
+
+    document.getElementById('btnRoll').onclick = ()=>{
+      if(!canAct()) return;
+      M.busy = true; syncActionButton();
+
+      row.classList.remove('animShake'); void row.offsetWidth; row.classList.add('animShake');
 
       setTimeout(()=>{
-        row.classList.remove('shake');
-        const r=[r6(),r6(),r6()];
-        renderDice(row,r);
-        const t=r.reduce((a,b)=>a+b,0);
+        const r = [1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6),1+Math.floor(Math.random()*6)];
+        setDice(r);
+        const t = r[0]+r[1]+r[2];
 
-        if (state.turnSeat === 1) {
-          state.temp.p1 = t;
-          updateStatus(`SEAT 1 rolled ${t}. SEAT 2 turn.`);
-          state.turnSeat = 2;
+        if(M.turn===1){
+          M.temp.p1=t;
+          setStatus(`SEAT 1 ROLLED ${t}. SEAT 2 TURN.`);
+          M.turn=2;
         } else {
-          const p1 = state.temp.p1 ?? 0;
-          updateStatus(`SEAT 1: ${p1} vs SEAT 2: ${t}`);
-          if (p1 > t) { updateStatus("SEAT 1 WINS ROUND!"); awardPoint(1); }
-          else if (t > p1) { updateStatus("SEAT 2 WINS ROUND!"); awardPoint(2); }
-          else updateStatus("DRAW! ROLL AGAIN.");
-          state.turnSeat = 1;
+          const p1=M.temp.p1 ?? 0;
+          setStatus(`SEAT 1: ${p1} vs SEAT 2: ${t}`);
+          if(p1>t){ setStatus("SEAT 1 WINS ROUND!"); award(1); }
+          else if(t>p1){ setStatus("SEAT 2 WINS ROUND!"); award(2); }
+          else setStatus("DRAW! ROLL AGAIN.");
+          M.turn=1;
         }
 
-        state.isBusy = false;
-        updateTurn(state.turnSeat);
-      }, 420);
+        M.busy=false;
+        applyTurnUI();
+      }, 320);
     };
   }
 
   // COIN
-  function setupCoin(){
-    DOM.gameBox.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:14px;align-items:center">
-        <div id="coin" class="flip" style="width:110px;height:110px;border-radius:999px;border:4px solid #000;background:#feca57;display:grid;place-items:center;font-family:Rajdhani,sans-serif;font-size:28px;font-weight:900;box-shadow:4px 4px 0 #000">?</div>
-        <button class="btn" id="coinBtn">FLIP</button>
-        <div style="color:#aaa;font-size:10px;font-family:Rajdhani,sans-serif">Turn-based: flip once per turn.</div>
+  function renderCoin(){
+    UI.gameBox.innerHTML = `
+      <div class="pixelCard" style="width:min(420px,90%)">
+        <div id="coin" class="pixelCard" style="margin:0 auto;width:140px;height:140px;display:grid;place-items:center;border-radius:999px;background:#feca57">
+          <div id="coinTxt" class="bigNum" style="font-size:28px;color:#000">?</div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn" id="btnFlip">FLIP</button>
       </div>
     `;
+    setActionBtn('btnFlip');
+
     const coin = document.getElementById('coin');
-    const btn = document.getElementById('coinBtn');
+    const txt = document.getElementById('coinTxt');
 
-    btn.onclick = () => {
-      if (!canPressNow()) return;
-      state.isBusy = true;
+    document.getElementById('btnFlip').onclick = ()=>{
+      if(!canAct()) return;
+      M.busy=true; syncActionButton();
 
-      coin.classList.remove('flip');
-      void coin.offsetWidth;
-      coin.classList.add('flip');
+      coin.classList.remove('animFlip'); void coin.offsetWidth; coin.classList.add('animFlip');
 
       setTimeout(()=>{
-        const isHeads = Math.random() < 0.5;
-        coin.textContent = isHeads ? "H" : "T";
-        coin.classList.add('pop');
-        setTimeout(()=>coin.classList.remove('pop'), 120);
+        const heads = Math.random()<.5;
+        txt.textContent = heads ? "H" : "T";
 
-        if (state.turnSeat === 1) {
-          state.temp.p1 = isHeads ? 1 : 0;
-          updateStatus(`SEAT 1 flipped ${isHeads ? "HEADS" : "TAILS"}. SEAT 2 turn.`);
-          state.turnSeat = 2;
+        if(M.turn===1){
+          M.temp.p1 = heads ? 1 : 0;
+          setStatus(`SEAT 1 FLIPPED ${heads?'HEADS':'TAILS'}. SEAT 2 TURN.`);
+          M.turn=2;
         } else {
-          const p1 = state.temp.p1 ?? 0;
-          const p2 = isHeads ? 1 : 0;
-          if (p1 > p2) awardPoint(1);
-          else if (p2 > p1) awardPoint(2);
-          else updateStatus("DRAW! FLIP AGAIN.");
-          state.turnSeat = 1;
+          const p1 = M.temp.p1 ?? 0;
+          const p2 = heads ? 1 : 0;
+          if(p1===p2) setStatus("DRAW! FLIP AGAIN.");
+          else if(p2>p1){ setStatus("SEAT 2 WINS ROUND!"); award(2); }
+          else { setStatus("SEAT 1 WINS ROUND!"); award(1); }
+          M.turn=1;
         }
 
-        state.isBusy = false;
-        updateTurn(state.turnSeat);
+        M.busy=false;
+        applyTurnUI();
       }, 650);
     };
   }
 
-  // HI-LO
-  function setupHiLo(){
-    DOM.gameBox.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
-        <div id="card" class="pop" style="width:160px;height:220px;border:4px solid #000;background:#111;box-shadow:6px 6px 0 #000;display:grid;place-items:center;font-family:Rajdhani,sans-serif;font-size:40px;font-weight:900;color:#fff">?</div>
-        <button class="btn" id="hlBtn">DRAW</button>
+  // ROULETTE (simple pixel spin)
+  function renderRoulette(){
+    UI.gameBox.innerHTML = `
+      <div class="pixelCard" style="width:min(420px,90%)">
+        <div id="wheel" class="pixelCard" style="margin:0 auto;width:220px;height:220px;border-radius:999px;background:conic-gradient(#ff4757 0 20%, #111 20% 40%, #2ecc71 40% 60%, #111 60% 80%, #ff4757 80% 100%);display:grid;place-items:center">
+          <div id="wheelTxt" style="font-size:12px;color:#fff">SPIN</div>
+        </div>
+        <div style="height:12px"></div>
+        <button class="btn" id="btnSpin">SPIN</button>
       </div>
     `;
-    const card = document.getElementById('card');
-    document.getElementById('hlBtn').onclick = () => {
-      if (!canPressNow()) return;
-      state.isBusy = true;
-      const v = 1 + Math.floor(Math.random()*13);
-      card.textContent = v;
-      card.classList.add('pop');
-      setTimeout(()=>card.classList.remove('pop'), 120);
+    setActionBtn('btnSpin');
 
-      if (state.turnSeat === 1) {
-        state.temp.p1 = v;
-        updateStatus(`SEAT 1 drew ${v}. SEAT 2 turn.`);
-        state.turnSeat = 2;
-      } else {
-        const p1 = state.temp.p1 ?? 0;
-        if (p1 > v) awardPoint(1);
-        else if (v > p1) awardPoint(2);
-        else updateStatus("DRAW! DRAW AGAIN.");
-        state.turnSeat = 1;
-      }
-      state.isBusy = false;
-      updateTurn(state.turnSeat);
+    const wheel = document.getElementById('wheel');
+    const txt = document.getElementById('wheelTxt');
+
+    document.getElementById('btnSpin').onclick = ()=>{
+      if(!canAct()) return;
+      M.busy=true; syncActionButton();
+
+      wheel.classList.remove('animFlip'); void wheel.offsetWidth; wheel.classList.add('animFlip');
+
+      setTimeout(()=>{
+        const r = Math.random();
+        const out = r < 0.48 ? "BLACK" : r < 0.96 ? "RED" : "GREEN";
+        txt.textContent = out;
+
+        if(M.turn===1){
+          M.temp.p1=out;
+          setStatus(`SEAT 1 SPUN ${out}. SEAT 2 TURN.`);
+          M.turn=2;
+        } else {
+          const p1=M.temp.p1;
+          if(p1===out) setStatus("DRAW! SPIN AGAIN.");
+          else if(out==="GREEN"){ setStatus("SEAT 2 WINS ROUND!"); award(2); }
+          else if(p1==="GREEN"){ setStatus("SEAT 1 WINS ROUND!"); award(1); }
+          else if(p1==="RED" && out==="BLACK"){ setStatus("SEAT 1 WINS ROUND!"); award(1); }
+          else { setStatus("SEAT 2 WINS ROUND!"); award(2); }
+          M.turn=1;
+        }
+
+        M.busy=false;
+        applyTurnUI();
+      }, 650);
     };
   }
 
   // RPS
-  function setupRPS(){
-    DOM.gameBox.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
-        <div id="rpsRow" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"></div>
-        <div id="rpsPick" style="color:#aaa;font-size:10px;font-family:Rajdhani,sans-serif">Pick: (turn-based)</div>
+  function renderRPS(){
+    UI.gameBox.innerHTML = `
+      <div class="pixelCard" style="width:min(520px,90%)">
+        <div style="font-size:10px;color:#888;margin-bottom:10px">PICK RPS (TURN-BASED)</div>
+        <div class="row" style="justify-content:center">
+          <button class="btn" id="rRock">ROCK</button>
+          <button class="btn" id="rPaper">PAPER</button>
+          <button class="btn" id="rScis">SCISSORS</button>
+        </div>
+        <div style="height:12px"></div>
+        <div style="font-size:10px;color:#bbb" id="rpsMsg">WAITING...</div>
       </div>
     `;
-    const row = document.getElementById('rpsRow');
-    const picks = ["ROCK","PAPER","SCISSORS"];
-    picks.forEach(p=>{
-      const b = document.createElement('button');
-      b.className = 'btn';
-      b.textContent = p;
-      b.onclick = () => {
-        if (!canPressNow()) return;
-        playRPS(p);
-      };
-      row.appendChild(b);
-    });
 
-    function playRPS(pick){
-      state.isBusy = true;
-      const v = pick;
-      document.getElementById('rpsPick').textContent = `SEAT ${state.turnSeat} picked ${v}`;
+    currentActionBtnId = null; // 3 buttons
+    const msg = document.getElementById('rpsMsg');
 
-      const score = (x) => x==="ROCK"?0:x==="PAPER"?1:2;
-      if (state.turnSeat === 1) {
-        state.temp.p1 = v;
-        state.turnSeat = 2;
-        updateStatus(`SEAT 2 TURN: CHOOSE RPS`);
+    const doPick = (pick)=>{
+      if(!canAct()) return;
+      M.busy=true;
+
+      msg.textContent = `SEAT ${M.turn} PICKED ${pick}`;
+
+      const score = (x)=>x==="ROCK"?0:x==="PAPER"?1:2;
+      if(M.turn===1){
+        M.temp.p1=pick;
+        setStatus(`SEAT 1 PICKED. SEAT 2 TURN.`);
+        M.turn=2;
       } else {
-        const p1 = state.temp.p1;
-        const p2 = v;
-        const a = score(p1), b = score(p2);
-        if (a===b) updateStatus("DRAW! PICK AGAIN.");
-        else if ((a+1)%3===b) awardPoint(2);
-        else awardPoint(1);
-        state.turnSeat = 1;
+        const a = score(M.temp.p1);
+        const b = score(pick);
+        if(a===b) setStatus("DRAW! PICK AGAIN.");
+        else if((a+1)%3===b){ setStatus("SEAT 2 WINS ROUND!"); award(2); }
+        else { setStatus("SEAT 1 WINS ROUND!"); award(1); }
+        M.turn=1;
       }
 
-      state.isBusy = false;
-      updateTurn(state.turnSeat);
+      M.busy=false;
+      applyTurnUI();
+    };
+
+    el('rRock').onclick = ()=>doPick("ROCK");
+    el('rPaper').onclick = ()=>doPick("PAPER");
+    el('rScis').onclick = ()=>doPick("SCISSORS");
+
+    // disable/enable them via applyTurnUI
+    const patch = ()=>{
+      const disabled = !canAct();
+      el('rRock').disabled = disabled;
+      el('rPaper').disabled = disabled;
+      el('rScis').disabled = disabled;
+    };
+    const old = applyTurnUI;
+    applyTurnUI = function(){
+      old();
+      patch();
+    };
+    patch();
+  }
+
+  // -------- Chat ----------
+  function addChat(user,text){
+    const div = document.createElement('div');
+    div.innerHTML = `<span style="color:var(--accent)">${esc(user)}:</span> ${esc(text)}`;
+    UI.chatLog.appendChild(div);
+    UI.chatLog.scrollTop = UI.chatLog.scrollHeight;
+  }
+  function chatKey(e){
+    if(e.key==='Enter'){
+      const v = e.target.value.trim();
+      if(!v) return;
+      socket.emit('chat', v);
+      e.target.value='';
     }
   }
 
-  // ROULETTE (simple)
-  function setupRoulette(){
-    DOM.gameBox.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
-        <div id="wheel" class="pop" style="width:200px;height:200px;border-radius:999px;border:4px solid #000;background:conic-gradient(#ff4757 0 20%, #111 20% 40%, #2ecc71 40% 60%, #111 60% 80%, #ff4757 80% 100%);box-shadow:6px 6px 0 #000;display:grid;place-items:center;font-family:Rajdhani,sans-serif;font-size:18px;font-weight:900;color:#fff">SPIN</div>
-        <button class="btn" id="spinBtn">SPIN</button>
-      </div>
-    `;
-    const wheel = document.getElementById('wheel');
-    document.getElementById('spinBtn').onclick = ()=>{
-      if (!canPressNow()) return;
-      state.isBusy = true;
+  // -------- Profile Card ----------
+  async function openProfile(username){
+    try{
+      const p = await api('/api/player/' + encodeURIComponent(username));
+      UI.profileText.textContent =
+        `NAME: ${p.username}\nSTART DATE: ${new Date(p.createdAt).toLocaleString()}\nCREDITS: ${p.credits} TC\nAVATAR: ${p.avatar}`;
+      UI.profileModal.style.display='flex';
+    }catch(e){ alert(e.message); }
+  }
+  function closeProfile(){ UI.profileModal.style.display='none'; }
 
-      wheel.classList.remove('flip'); void wheel.offsetWidth; wheel.classList.add('flip');
-      setTimeout(()=>{
-        const r = Math.random();
-        const out = r < 0.48 ? "BLACK" : r < 0.96 ? "RED" : "GREEN";
-        wheel.textContent = out;
-
-        if (state.turnSeat === 1) { state.temp.p1 = out; state.turnSeat = 2; updateStatus(`SEAT 1 spun ${out}. SEAT 2 turn.`); }
-        else {
-          const p1 = state.temp.p1;
-          if (p1===out) updateStatus("DRAW! SPIN AGAIN.");
-          else if (out==="GREEN") awardPoint(2);
-          else if (p1==="GREEN") awardPoint(1);
-          else if (p1==="RED" && out==="BLACK") awardPoint(1);
-          else awardPoint(2);
-          state.turnSeat = 1;
-        }
-
-        state.isBusy = false;
-        updateTurn(state.turnSeat);
-      }, 650);
-    };
+  // -------- Proposal modal ----------
+  function closeProposal(){ UI.proposalModal.style.display='none'; }
+  function respond(accept){
+    closeProposal();
+    socket.emit('proposal:respond', { accept: !!accept });
   }
 
-  // Spectator betting (demo)
-  const spec = { betOn:null, betAmount:0, locked:false };
-  function selectBet(player){
-    if(spec.locked) return;
-    spec.betOn = player;
-    document.getElementById('betP1Btn').classList.toggle('selected', player===1);
-    document.getElementById('betP2Btn').classList.toggle('selected', player===2);
+  // show bet only for spectators
+  const bet = { side:null, amount:0, locked:false };
+  function refreshBetAccess(){
+    const seated = mySeat() !== 0;
+    if(seated){
+      UI.betOverlay.style.display = 'flex';
+      UI.betOverlay.textContent = 'SPECTATORS ONLY';
+      UI.bet1.disabled = true;
+      UI.bet2.disabled = true;
+      UI.betAmt.disabled = true;
+      UI.betGo.disabled = true;
+      return;
+    }
+    // spectators: overlay depends on duel lock
+    if(STATE?.room?.settingsLocked){
+      UI.betOverlay.style.display = 'none';
+      UI.bet1.disabled = false;
+      UI.bet2.disabled = false;
+      UI.betAmt.disabled = false;
+      UI.betGo.disabled = false;
+    } else {
+      UI.betOverlay.style.display = 'flex';
+      UI.betOverlay.textContent = 'WAITING FOR DUEL ACCEPT...';
+      UI.bet1.disabled = true;
+      UI.bet2.disabled = true;
+      UI.betAmt.disabled = true;
+      UI.betGo.disabled = true;
+    }
   }
-  function placeSpectatorBet(){
-    const amt = parseInt(document.getElementById('betAmount').value,10);
-    if(!spec.betOn) return alert("Select a Player first!");
+
+  function selBet(s){
+    bet.side = s;
+    UI.bet1.style.borderColor = (s===1?'#fff':'#000');
+    UI.bet2.style.borderColor = (s===2?'#fff':'#000');
+  }
+  function placeBet(){
+    const amt = parseInt(UI.betAmt.value,10);
+    if(!bet.side) return alert("Pick a side");
     if(!Number.isFinite(amt) || amt<=0) return alert("Invalid amount");
     if(amt > (ME?.credits ?? 0)) return alert("Insufficient funds");
 
-    spec.betAmount = amt;
-    spec.locked = true;
-    document.getElementById('betStatus').innerText = `LOCKED: ${amt} TC on P${spec.betOn}`;
-    document.getElementById('placeBetBtn').disabled = true;
-    document.getElementById('betAmount').disabled = true;
-    document.getElementById('betP1Btn').disabled = true;
-    document.getElementById('betP2Btn').disabled = true;
+    bet.amount = amt;
+    bet.locked = true;
+    UI.betStatus.textContent = `LOCKED: ${amt} TC on SEAT ${bet.side}`;
+    UI.betGo.disabled = true;
+    UI.betAmt.disabled = true;
+    UI.bet1.disabled = true;
+    UI.bet2.disabled = true;
   }
 
-  // Boot
-  (async ()=>{
-    await mustAuth();
-    socket.emit('hello', { username: ME.username });
-    updateStatus("WAITING FOR PLAYERS...");
-    setGame(state.game);
-    updateTurn(1);
-  })();
+  // -------- Players list ----------
+  function renderPlayers(players){
+    UI.plist.innerHTML = '';
+    players.forEach(p=>{
+      const div = document.createElement('div');
+      div.className='pitem';
+      div.onclick = ()=>openProfile(p.username);
+
+      const left = document.createElement('div');
+      left.style.display='flex';
+      left.style.gap='10px';
+      left.style.alignItems='center';
+
+      const av = document.createElement('div');
+      av.className = `avatar ${avatarClass(p.avatar)}`;
+      left.appendChild(av);
+
+      const name = document.createElement('div');
+      name.textContent = p.username;
+      name.style.fontSize='11px';
+      left.appendChild(name);
+
+      const tag = document.createElement('div');
+      tag.className='ptag';
+      if(p.seat===1) tag.textContent='SEAT 1';
+      else if(p.seat===2) tag.textContent='SEAT 2';
+      else tag.textContent='ONLINE';
+      left.appendChild(tag);
+
+      const mic = document.createElement('div');
+      mic.className = `mic ${p.speaking?'on':''}`;
+      mic.textContent = '🎤';
+
+      div.appendChild(left);
+      div.appendChild(mic);
+      UI.plist.appendChild(div);
+    });
+  }
+
+  // -------- Emote bubbles beside avatar ----------
+  function showBubble(seat, emote){
+    const b = seat===1 ? UI.p1Bubble : UI.p2Bubble;
+    b.textContent = emote;
+    b.classList.add('show');
+    setTimeout(()=>b.classList.remove('show'), 900);
+  }
+
+  // -------- Socket events ----------
+  socket.on('state', (s)=>{
+    STATE = s;
+
+    UI.p1Name.textContent = s.room.seat1 || 'EMPTY';
+    UI.p2Name.textContent = s.room.seat2 || 'EMPTY';
+
+    // avatars for seated
+    const p1 = s.players.find(x=>x.username===s.room.seat1);
+    const p2 = s.players.find(x=>x.username===s.room.seat2);
+    UI.p1Avatar.className = `avatar ${avatarClass(p1?.avatar || 'avatar1')}`;
+    UI.p2Avatar.className = `avatar ${avatarClass(p2?.avatar || 'avatar1')}`;
+
+    setPot();
+    showProposalSummary();
+    lockTabs();
+    renderPlayers(s.players);
+    renderSeatControls();
+    refreshBetAccess();
+
+    // status
+    if(!s.room.seat1 && !s.room.seat2) setStatus("WAITING FOR PLAYERS...");
+    else if(s.room.seat1 && !s.room.seat2) setStatus("WAITING FOR OPPONENT...");
+    else if(!s.room.settingsLocked) setStatus(`${proposer() || 'FIRST'} MUST PROPOSE MATCH...`);
+
+    // If match is locked and game not rendered yet -> render
+    if(s.room.settingsLocked){
+      renderGame();
+    } else {
+      UI.gameBox.innerHTML = `<div class="pixelCard"><div style="color:var(--accent);font-size:10px;margin-bottom:10px">WAITING</div><div style="font-size:9px;color:#888">MATCH NOT STARTED</div></div>`;
+      currentActionBtnId = null;
+    }
+
+    // critical: if seated changed, re-evaluate controls/buttons
+    applyTurnUI();
+  });
+
+  socket.on('chat', (m)=> addChat(m.user, m.text));
+
+  // ✅ BOTH CAN SEE the proposal modal, but only opponent gets buttons
+  socket.on('proposal:incoming', ({ proposal })=>{
+    if(!ME) return;
+    const opp = (STATE?.room?.seat1===proposal.by) ? STATE?.room?.seat2 : STATE?.room?.seat1;
+    const amOpponent = (ME.username === opp);
+
+    UI.proposalText.textContent =
+      `FROM: ${proposal.by}\nGAME: ${proposal.game.toUpperCase()}\nROUNDS: ${roundsLabel(proposal.roundsKey)}\nBET: ${proposal.bet} TC EACH\nPOT: ${proposal.bet*2} TC\n\n${amOpponent ? 'ACCEPT OR DECLINE.' : 'WAITING OPPONENT RESPONSE...'}`;
+
+    // show modal for BOTH (as requested)
+    UI.proposalModal.style.display='flex';
+
+    // disable buttons if you're not opponent
+    const btns = UI.proposalModal.querySelectorAll('button');
+    // order: CLOSE, ACCEPT, DECLINE
+    if(btns[1]) btns[1].disabled = !amOpponent;
+    if(btns[2]) btns[2].disabled = !amOpponent;
+  });
+
+  socket.on('proposal:error', (e)=> alert(e?.error || "Proposal failed"));
+
+  socket.on('proposal:result', async (r)=>{
+    await reloadCredits();
+    if(!r.ok && r.error) alert(r.error);
+    if(r.ok && r.accepted===false) setStatus("PROPOSAL DECLINED.");
+  });
+
+  socket.on('match:started', async ({ proposal, pot })=>{
+    await reloadCredits();
+
+    M.game = proposal.game;
+    M.roundsKey = proposal.roundsKey;
+    M.bet = proposal.bet;
+    M.target = roundsTarget(proposal.roundsKey);
+
+    // reset
+    M.p1=0; M.p2=0; M.turn=1; M.over=false; M.busy=false; M.temp={};
+    UI.p1Score.textContent="0"; UI.p2Score.textContent="0";
+    setRoundLine();
+
+    setStatus(`MATCH STARTED: ${proposal.game.toUpperCase()} | ${roundsLabel(proposal.roundsKey)} | POT ${pot} TC`);
+    setGame(M.game);
+    renderGame();
+    applyTurnUI();
+  });
+
+  socket.on('duel:emote', ({ from, emote })=>{
+    if(!STATE?.room) return;
+    const seat = (STATE.room.seat1===from) ? 1 : (STATE.room.seat2===from) ? 2 : 0;
+    if(seat) showBubble(seat, emote);
+  });
+
+  socket.on('credits:updated', ({ username, credits })=>{
+    if(!ME || ME.username !== username) return;
+    ME.credits = credits ?? 0;
+    UI.meCredits.textContent = ME.credits ?? 0;
+    UI.wallet.textContent = `WALLET: ${(ME.credits ?? 0)} TC`;
+  });
+
+  // expose
+  window.logout = logout;
+  window.chatKey = chatKey;
+  window.pickGame = pickGame;
+  window.takeSeat = takeSeat;
+  window.selBet = selBet;
+  window.placeBet = placeBet;
+  window.closeProfile = closeProfile;
+  window.closeProposal = closeProposal;
+  window.respond = respond;
+
+  // start
+  boot();
 </script>
 </body>
 </html>
