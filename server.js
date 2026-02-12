@@ -110,8 +110,13 @@ app.post("/api/signup", async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // starter credits (change if you want)
-    const created = await User.create({ username, passwordHash, isAdmin: false, credits: 1000, avatar: "avatar1" });
+    const created = await User.create({
+      username,
+      passwordHash,
+      isAdmin: false,
+      credits: 1000,
+      avatar: "avatar1"
+    });
 
     req.session.userId = created._id.toString();
     req.session.username = created.username;
@@ -159,7 +164,7 @@ app.get("/api/me", async (req, res) => {
   });
 });
 
-// ✅ Credits always safe + auto-fix old users
+// ----- Credits -----
 app.get("/api/credits", requireAuth, async (req, res) => {
   const me = await User.findById(req.session.userId).lean();
   if (!me) return res.status(401).json({ error: "Unauthorized" });
@@ -180,7 +185,7 @@ app.get("/api/credits", requireAuth, async (req, res) => {
   });
 });
 
-// ✅ Authenticated player lookup (shows credits)
+// ----- Player Lookup -----
 app.get("/api/player/:username", requireAuth, async (req, res) => {
   const u = await User.findOne({ username: req.params.username }).lean();
   if (!u) return res.status(404).json({ error: "Player not found" });
@@ -195,6 +200,7 @@ app.get("/api/player/:username", requireAuth, async (req, res) => {
   res.json({ ok: true, username: u.username, credits, avatar });
 });
 
+// ----- Avatar -----
 app.post("/api/avatar", requireAuth, async (req, res) => {
   const { avatar } = req.body;
   const allowed = new Set(["avatar1", "avatar2", "avatar3", "avatar4", "avatar5", "avatar6"]);
@@ -204,7 +210,7 @@ app.post("/api/avatar", requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
-// ----- Player requests (Topup / Withdraw) -----
+// ----- Player Requests -----
 app.post("/api/txns", requireAuth, async (req, res) => {
   const { type, amount, note = "" } = req.body;
   const amt = Number(amount);
@@ -227,7 +233,7 @@ app.get("/api/txns", requireAuth, async (req, res) => {
   res.json({ ok: true, rows });
 });
 
-// ----- Support tickets -----
+// ----- Support Tickets -----
 app.post("/api/tickets", requireAuth, async (req, res) => {
   const { subject, message } = req.body;
   if (!subject || !message) return res.status(400).json({ error: "Missing fields." });
@@ -271,9 +277,10 @@ app.get("/api/admin/txns", requireAdmin, async (req, res) => {
   res.json({ ok: true, rows });
 });
 
-// ✅ IMPORTANT FIX: approving actually updates user credits
+// ✅ FIX: Admin approval updates player credits
 app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   const { status } = req.body;
+
   if (!["APPROVED", "REJECTED"].includes(status)) {
     return res.status(400).json({ error: "Invalid status." });
   }
@@ -281,19 +288,16 @@ app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   const txn = await Txn.findById(req.params.id);
   if (!txn) return res.status(404).json({ error: "Transaction not found." });
 
-  // prevent double-processing
   if (txn.status !== "PENDING") {
     return res.status(400).json({ error: "This request is already processed." });
   }
 
-  // If rejected: just mark rejected
   if (status === "REJECTED") {
     txn.status = "REJECTED";
     await txn.save();
     return res.json({ ok: true, updated: txn });
   }
 
-  // APPROVED: update player's credits
   const user = await User.findById(txn.userId);
   if (!user) return res.status(404).json({ error: "User not found." });
 
@@ -319,7 +323,6 @@ app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   txn.status = "APPROVED";
   await txn.save();
 
-  // ✅ realtime notify so the player panel updates instantly
   io.emit("credits:updated", { username: user.username, credits: newCredits });
 
   return res.json({ ok: true, updated: txn, username: user.username, credits: newCredits });
@@ -343,7 +346,7 @@ const online = new Map(); // socketId -> { username, avatar, speaking }
 const room = {
   seat1: null,
   seat2: null,
-  proposal: null, // { by, game, roundsKey, bet, ts }
+  proposal: null,
   pot: 0,
   settingsLocked: false
 };
@@ -412,7 +415,6 @@ io.on("connection", (socket) => {
     io.emit("state", snapshot());
   });
 
-  // Seat: 1 seat only, server enforced
   socket.on("takeSeat", ({ seat }) => {
     const u = online.get(socket.id);
     if (!u) return;
