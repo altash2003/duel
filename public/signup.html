@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#121216;color:#fff;font-family:'Press Start 2P',cursive}
+    .card{width:min(520px,92vw);background:#1e1e24;border:4px solid #000;box-shadow:6px 6px 0 #000;padding:18px}
+    label{font-size:10px;display:block;margin:14px 0 8px}
+    input{width:100%;padding:14px 12px;font-family:'Press Start 2P';font-size:12px;line-height:1.2;border:2px solid #555;background:#000;color:#fff;box-sizing:border-box}
+    button{margin-top:14px;width:100%;padding:14px;font-family:'Press Start 2P';font-size:12px;background:#feca57;border:2px solid #000;cursor:pointer}
+    a{color:#feca57;font-size:10px}
+    .err{color:#ff4757;font-size:10px;margin-top:12px;min-height:14px}
+    .hint{font-size:9px;color:#aaa;line-height:1.5;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 style="margin:0 0 14px;font-size:14px;color:#feca57">SIGN UP</h1>
+    <label>USERNAME</label>
+    <input id="u" placeholder="5-12 letters/numbers" autocomplete="username" />
+    <label>PASSWORD</label>
+    <input id="p" placeholder="5-12 characters" type="password" autocomplete="new-password" />
+    <button id="btn">CREATE</button>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <a href="/login.html">Already have account</a>
+      <a href="/index.html" style="margin-left:auto">Back</a>
+    </div>
+    <div class="hint">USERNAME: 5–12 letters/numbers only<br>PASSWORD: 5–12 characters</div>
+    <div class="err" id="err"></div>
+  </div>
+
+<script>
+  const err = document.getElementById('err');
+  document.getElementById('btn').onclick = async () => {
+    err.textContent = '';
+    const username = document.getElementById('u').value.trim();
+    const password = document.getElementById('p').value;
+    const r = await fetch('/api/signup', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    });
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok){ err.textContent = j.error || 'Signup failed'; return; }
+    location.href = '/index.html';
+  };
+</script>
+</body>
+</html>

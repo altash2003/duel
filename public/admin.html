@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:#121216;color:#fff;font-family:'Press Start 2P',cursive}
+    .wrap{padding:18px;max-width:1200px;margin:0 auto}
+    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+    button,a.btn{font-family:'Press Start 2P';font-size:10px;padding:10px 12px;background:#feca57;border:2px solid #000;cursor:pointer;text-decoration:none;color:#000}
+    .card{background:#1e1e24;border:4px solid #000;box-shadow:6px 6px 0 #000;padding:12px;margin:14px 0}
+    h2{margin:0 0 10px;font-size:12px;color:#feca57}
+    table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif}
+    th,td{border-bottom:1px solid #2b2b33;padding:8px 6px;font-size:14px}
+    th{color:#aaa;text-align:left}
+    .pill{padding:2px 8px;border:1px solid #444;border-radius:999px;font-size:12px}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    select{padding:6px;font-family:'Press Start 2P';font-size:9px;background:#000;color:#fff;border:2px solid #555}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1 style="margin:0;font-size:14px;color:#feca57">ADMIN PANEL</h1>
+      <a class="btn" href="/index.html" style="margin-left:auto">Back</a>
+      <button id="logout">Logout</button>
+    </div>
+
+    <div class="card">
+      <h2>PLAYERS DATABASE</h2>
+      <table id="players"></table>
+    </div>
+
+    <div class="card">
+      <h2>TOPUP / WITHDRAWAL REQUESTS</h2>
+      <table id="txns"></table>
+    </div>
+
+    <div class="card">
+      <h2>SUPPORT TICKETS</h2>
+      <table id="tickets"></table>
+    </div>
+  </div>
+
+<script>
+  async function mustBeAdmin(){
+    const me = await fetch('/api/me').then(r=>r.json());
+    if(!me.authed) location.href='/login.html';
+    if(!me.isAdmin) location.href='/index.html';
+  }
+
+  function esc(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  async function loadPlayers(){
+    const j = await fetch('/api/admin/players').then(r=>r.json());
+    const t = document.getElementById('players');
+    t.innerHTML = `
+      <tr><th>Username</th><th>Admin</th><th>Created</th></tr>
+      ${j.rows.map(r=>`<tr>
+        <td>${esc(r.username)}</td>
+        <td><span class="pill">${r.isAdmin?'YES':'NO'}</span></td>
+        <td>${new Date(r.createdAt).toLocaleString()}</td>
+      </tr>`).join('')}
+    `;
+  }
+
+  async function loadTxns(){
+    const j = await fetch('/api/admin/txns').then(r=>r.json());
+    const t = document.getElementById('txns');
+    t.innerHTML = `
+      <tr><th>Type</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
+      ${j.rows.map(r=>`<tr>
+        <td>${esc(r.type)}</td>
+        <td>${r.amount}</td>
+        <td><span class="pill">${esc(r.status)}</span></td>
+        <td>${new Date(r.createdAt).toLocaleString()}</td>
+        <td class="row">
+          <button data-id="${r._id}" data-s="APPROVED">Approve</button>
+          <button data-id="${r._id}" data-s="REJECTED">Reject</button>
+        </td>
+      </tr>`).join('')}
+    `;
+
+    t.querySelectorAll('button').forEach(btn=>{
+      btn.onclick = async () => {
+        await fetch('/api/admin/txns/'+btn.dataset.id, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ status: btn.dataset.s })
+        });
+        loadTxns();
+      };
+    });
+  }
+
+  async function loadTickets(){
+    const j = await fetch('/api/admin/tickets').then(r=>r.json());
+    const t = document.getElementById('tickets');
+    t.innerHTML = `
+      <tr><th>Subject</th><th>Status</th><th>Created</th><th>Action</th></tr>
+      ${j.rows.map(r=>`<tr>
+        <td>${esc(r.subject)}</td>
+        <td><span class="pill">${esc(r.status)}</span></td>
+        <td>${new Date(r.createdAt).toLocaleString()}</td>
+        <td class="row">
+          <button data-id="${r._id}" data-s="OPEN">Open</button>
+          <button data-id="${r._id}" data-s="CLOSED">Close</button>
+        </td>
+      </tr>`).join('')}
+    `;
+    t.querySelectorAll('button').forEach(btn=>{
+      btn.onclick = async () => {
+        await fetch('/api/admin/tickets/'+btn.dataset.id, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ status: btn.dataset.s })
+        });
+        loadTickets();
+      };
+    });
+  }
+
+  document.getElementById('logout').onclick = async () => {
+    await fetch('/api/logout', {method:'POST'});
+    location.href='/login.html';
+  };
+
+  (async ()=>{
+    await mustBeAdmin();
+    await loadPlayers();
+    await loadTxns();
+    await loadTickets();
+  })();
+</script>
+</body>
+</html>
