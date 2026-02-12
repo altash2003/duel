@@ -41,7 +41,6 @@ const txnSchema = new mongoose.Schema(
   { minimize: false }
 );
 
-// ticket now has threaded messages
 const ticketSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, index: true },
@@ -98,26 +97,21 @@ function isValidUsername(u) {
 function isValidPassword(p) {
   return typeof p === "string" && p.length >= 5 && p.length <= 12;
 }
-
 async function getMe(req) {
   if (!req.session?.userId) return null;
   return User.findById(req.session.userId).lean();
 }
-
 function requireAuth(req, res, next) {
   if (!req.session?.userId) return res.status(401).json({ error: "Unauthorized" });
   next();
 }
-
 async function requireAdmin(req, res, next) {
   const me = await getMe(req);
   if (!me) return res.status(401).json({ error: "Unauthorized" });
   if (!me.isAdmin) return res.status(403).json({ error: "Forbidden" });
   next();
 }
-
 function publicCredits(user) {
-  // ✅ admin infinite credits
   if (user?.isAdmin) return 999999999;
   return safeInt(user?.credits);
 }
@@ -190,23 +184,21 @@ app.get("/api/credits", requireAuth, async (req, res) => {
   const me = await getMe(req);
   if (!me) return res.status(401).json({ error: "Unauthorized" });
 
-  // ensure defaults
   const avatar = me.avatar || "avatar1";
   const credits = publicCredits(me);
 
   if (!me.isAdmin) {
-    // normalize stored credits only for non-admin
     if (!Number.isFinite(me.credits) || !me.avatar) {
       await User.updateOne({ _id: me._id }, { $set: { credits: safeInt(me.credits), avatar } });
     }
   } else {
-    // admin: ensure avatar exists
     if (!me.avatar) await User.updateOne({ _id: me._id }, { $set: { avatar } });
   }
 
   res.json({ ok: true, username: me.username, credits, avatar, isAdmin: !!me.isAdmin });
 });
 
+// ✅ include createdAt for profile card
 app.get("/api/player/:username", requireAuth, async (req, res) => {
   const u = await User.findOne({ username: req.params.username }).lean();
   if (!u) return res.status(404).json({ error: "Player not found" });
@@ -222,7 +214,14 @@ app.get("/api/player/:username", requireAuth, async (req, res) => {
     if (!u.avatar) await User.updateOne({ username: u.username }, { $set: { avatar } });
   }
 
-  res.json({ ok: true, username: u.username, credits, avatar, isAdmin: !!u.isAdmin });
+  res.json({
+    ok: true,
+    username: u.username,
+    credits,
+    avatar,
+    isAdmin: !!u.isAdmin,
+    createdAt: u.createdAt
+  });
 });
 
 app.post("/api/avatar", requireAuth, async (req, res) => {
@@ -304,7 +303,6 @@ app.post("/api/tickets/:id/messages", requireAuth, async (req, res) => {
   if (!me.isAdmin && String(t.userId) !== String(me._id)) {
     return res.status(403).json({ error: "Forbidden" });
   }
-
   if (t.status === "CLOSED") return res.status(400).json({ error: "Ticket closed" });
 
   t.messages.push({ from: me.isAdmin ? "ADMIN" : me.username, text: String(text).slice(0, 1000) });
@@ -319,7 +317,6 @@ app.get("/api/admin/players", requireAdmin, async (req, res) => {
     .sort({ createdAt: -1 })
     .lean();
 
-  // return with public credits
   res.json({
     ok: true,
     rows: rows.map((u) => ({
@@ -348,7 +345,6 @@ app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   const txn = await Txn.findById(req.params.id);
   if (!txn) return res.status(404).json({ error: "Transaction not found." });
 
-  // ✅ prevent double processing
   if (txn.status !== "PENDING") {
     return res.status(400).json({ error: "This request is already processed." });
   }
@@ -362,7 +358,6 @@ app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
   const user = await User.findById(txn.userId);
   if (!user) return res.status(404).json({ error: "User not found." });
 
-  // ✅ admin infinite credits: admin never changes credits
   if (user.isAdmin) {
     txn.status = "APPROVED";
     await txn.save();
@@ -375,16 +370,11 @@ app.post("/api/admin/txns/:id", requireAdmin, async (req, res) => {
 
   let newCredits = currentCredits;
 
-  if (txn.type === "TOPUP") {
-    newCredits = currentCredits + amount;
-  } else if (txn.type === "WITHDRAW") {
-    if (currentCredits < amount) {
-      return res.status(400).json({ error: "Insufficient credits to approve withdrawal." });
-    }
+  if (txn.type === "TOPUP") newCredits = currentCredits + amount;
+  else if (txn.type === "WITHDRAW") {
+    if (currentCredits < amount) return res.status(400).json({ error: "Insufficient credits to approve withdrawal." });
     newCredits = currentCredits - amount;
-  } else {
-    return res.status(400).json({ error: "Invalid transaction type." });
-  }
+  } else return res.status(400).json({ error: "Invalid transaction type." });
 
   user.credits = newCredits;
   await user.save();
@@ -426,15 +416,43 @@ app.post("/api/admin/tickets/:id/archive", requireAdmin, async (req, res) => {
   res.json({ ok: true, ticket: t });
 });
 
-// ------------------ REALTIME: presence + seats + proposer + proposal + pot + emotes ------------------
+// ✅ ADMIN DIRECT TOPUP (no request needed)
+app.post("/api/admin/topup", requireAdmin, async (req, res) => {
+  const { username, amount, note = "ADMIN TOPUP" } = req.body;
+  const amt = Number(amount);
+
+  if (!username || !Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: "Invalid payload" });
+
+  const u = await User.findOne({ username }).exec();
+  if (!u) return res.status(404).json({ error: "User not found" });
+
+  if (!u.isAdmin) {
+    u.credits = safeInt(u.credits) + safeInt(amt);
+    await u.save();
+  }
+
+  const tx = await Txn.create({
+    userId: u._id,
+    type: "TOPUP",
+    amount: safeInt(amt),
+    status: "APPROVED",
+    note: String(note).slice(0, 140),
+    archived: false
+  });
+
+  io.emit("credits:updated", { username: u.username, credits: publicCredits(u) });
+
+  res.json({ ok: true, txn: tx, username: u.username, credits: publicCredits(u) });
+});
+
+// ------------------ REALTIME: presence + seats + proposal + pot + emotes ------------------
 const online = new Map(); // socketId -> { username, avatar, speaking }
 
-// proposerUsername = whoever sat first
 const room = {
   seat1: null,
   seat2: null,
-  proposer: null, // ✅ whoever sat first
-  proposal: null, // { by, game, roundsKey, bet, ts }
+  proposer: null,
+  proposal: null,
   pot: 0,
   settingsLocked: false
 };
@@ -475,7 +493,7 @@ async function getUser(username) {
 async function setCredits(username, newCredits) {
   const u = await User.findOne({ username }).lean();
   if (!u) return;
-  if (u.isAdmin) return; // ✅ admin never changes
+  if (u.isAdmin) return;
   await User.updateOne({ username }, { $set: { credits: Math.max(0, Math.floor(newCredits)) } });
 }
 
@@ -512,7 +530,6 @@ io.on("connection", (socket) => {
     const u = online.get(socket.id);
     if (!u) return;
 
-    // already seated anywhere
     if (room.seat1 === u.username || room.seat2 === u.username) return;
 
     if (seat === 1) {
@@ -523,10 +540,8 @@ io.on("connection", (socket) => {
       room.seat2 = u.username;
     } else return;
 
-    // ✅ whoever sits first becomes proposer
     if (!room.proposer) room.proposer = u.username;
 
-    // reset any pending proposal until both seated
     room.proposal = null;
     room.pot = 0;
     room.settingsLocked = false;
@@ -538,15 +553,13 @@ io.on("connection", (socket) => {
     const u = online.get(socket.id);
     if (!u) return;
 
-    const wasSeated = (room.seat1 === u.username) || (room.seat2 === u.username);
+    const wasSeated = room.seat1 === u.username || room.seat2 === u.username;
 
     if (room.seat1 === u.username) room.seat1 = null;
     if (room.seat2 === u.username) room.seat2 = null;
 
-    // if someone leaves, reset proposer logic cleanly
     if (wasSeated) {
       room.proposer = null;
-      // if someone is still seated, they become proposer automatically
       if (room.seat1) room.proposer = room.seat1;
       else if (room.seat2) room.proposer = room.seat2;
     }
@@ -558,17 +571,12 @@ io.on("connection", (socket) => {
     io.emit("state", snapshot());
   });
 
-  // ✅ proposer is whoever sat first (room.proposer)
   socket.on("proposal:create", async ({ game, roundsKey, bet }) => {
     const u = online.get(socket.id);
     if (!u) return;
 
-    // must be proposer
     if (room.proposer !== u.username) return;
-
-    // must have both seats
     if (!room.seat1 || !room.seat2) return;
-
     if (room.settingsLocked) return;
 
     const allowedGames = new Set(["dice", "coin", "hl", "roulette", "rps", "ttt"]);
@@ -595,10 +603,7 @@ io.on("connection", (socket) => {
     room.settingsLocked = false;
 
     io.emit("state", snapshot());
-
-    // send to opponent (the other seated)
-    const opponent = room.seat1 === u.username ? room.seat2 : room.seat1;
-    io.emit("proposal:incoming", { to: opponent, proposal: room.proposal });
+    io.emit("proposal:incoming", { proposal: room.proposal });
   });
 
   socket.on("proposal:respond", async ({ accept }) => {
@@ -607,7 +612,6 @@ io.on("connection", (socket) => {
     if (!room.proposal) return;
     if (room.settingsLocked) return;
 
-    // only opponent can respond
     const opponent = room.seat1 === room.proposal.by ? room.seat2 : room.seat1;
     if (u.username !== opponent) return;
 
@@ -633,7 +637,6 @@ io.on("connection", (socket) => {
       return;
     }
 
-    // debit (admin doesn't debit)
     if (!p1.isAdmin) await setCredits(room.seat1, c1 - wager);
     if (!p2.isAdmin) await setCredits(room.seat2, c2 - wager);
 
@@ -644,7 +647,6 @@ io.on("connection", (socket) => {
     io.emit("proposal:result", { ok: true, accepted: true, proposal: room.proposal, pot: room.pot });
     io.emit("state", snapshot());
 
-    // update wallets (admin stays infinite)
     io.emit("credits:updated", { username: p1.username, credits: publicCredits(await getUser(p1.username)) });
     io.emit("credits:updated", { username: p2.username, credits: publicCredits(await getUser(p2.username)) });
   });
@@ -653,7 +655,6 @@ io.on("connection", (socket) => {
     const u = online.get(socket.id);
     if (!u) return;
 
-    // only seated duel players
     if (u.username !== room.seat1 && u.username !== room.seat2) return;
     if (!room.settingsLocked) return;
 
@@ -673,12 +674,10 @@ io.on("connection", (socket) => {
     online.delete(socket.id);
 
     if (u) {
-      // if seated, clear match
       if (room.seat1 === u.username || room.seat2 === u.username) {
         clearMatch();
       }
     }
-
     io.emit("state", snapshot());
   });
 });
