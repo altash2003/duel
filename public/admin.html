@@ -8,8 +8,13 @@
   <style>
     body{margin:0;background:#121216;color:#fff;font-family:'Press Start 2P',cursive}
     .wrap{padding:18px;max-width:1200px;margin:0 auto}
-    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px}
-    button,a.btn{font-family:'Press Start 2P';font-size:10px;padding:10px 12px;background:#feca57;border:2px solid #000;cursor:pointer;text-decoration:none;color:#000}
+    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    button,a.btn{
+      font-family:'Press Start 2P';font-size:10px;padding:10px 12px;background:#feca57;border:2px solid #000;
+      cursor:pointer;text-decoration:none;color:#000
+    }
+    button.gray{background:#555;color:#fff}
+    button.green{background:#2ecc71}
     .card{background:#1e1e24;border:4px solid #000;box-shadow:6px 6px 0 #000;padding:12px;margin:14px 0}
     h2{margin:0 0 10px;font-size:12px;color:#feca57}
     table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif}
@@ -17,7 +22,16 @@
     th{color:#aaa;text-align:left}
     .pill{padding:2px 8px;border:1px solid #444;border-radius:999px;font-size:12px}
     .row{display:flex;gap:8px;flex-wrap:wrap}
-    select{padding:6px;font-family:'Press Start 2P';font-size:9px;background:#000;color:#fff;border:2px solid #555}
+    .small{font-size:12px;color:#bbb;font-family:'Rajdhani',sans-serif}
+    .playerRow{cursor:pointer}
+    .playerRow:hover{background:#2a2a33}
+    .modal{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;
+      align-items:center;justify-content:center;padding:20px
+    }
+    .modalInner{
+      width:min(520px,92vw);background:#000;border:4px solid #333;padding:14px;box-shadow:6px 6px 0 #000
+    }
   </style>
 </head>
 <body>
@@ -25,11 +39,12 @@
     <div class="top">
       <h1 style="margin:0;font-size:14px;color:#feca57">ADMIN PANEL</h1>
       <a class="btn" href="/index.html" style="margin-left:auto">Back</a>
-      <button id="logout">Logout</button>
+      <button class="gray" onclick="location.reload()">REFRESH</button>
+      <button id="logout" class="gray">LOGOUT</button>
     </div>
 
     <div class="card">
-      <h2>PLAYERS DATABASE</h2>
+      <h2>PLAYERS DATABASE (CLICK A PLAYER)</h2>
       <table id="players"></table>
     </div>
 
@@ -44,10 +59,20 @@
     </div>
   </div>
 
+  <div class="modal" id="playerModal">
+    <div class="modalInner">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="color:#feca57;font-size:12px">PLAYER INFO</div>
+        <button class="gray" onclick="closeModal()">CLOSE</button>
+      </div>
+      <div id="playerInfo" class="small" style="margin-top:10px;line-height:1.6"></div>
+    </div>
+  </div>
+
 <script>
   async function mustBeAdmin(){
-    const me = await fetch('/api/me').then(r=>r.json());
-    if(!me.authed) location.href='/login.html';
+    const me = await fetch('/api/credits').then(r=>r.json()).catch(()=>({}));
+    if(!me.ok){ location.href='/login.html'; return; }
     if(!me.isAdmin) location.href='/index.html';
   }
 
@@ -57,34 +82,56 @@
     const j = await fetch('/api/admin/players').then(r=>r.json());
     const t = document.getElementById('players');
     t.innerHTML = `
-      <tr><th>Username</th><th>Admin</th><th>Created</th></tr>
-      ${j.rows.map(r=>`<tr>
+      <tr><th>Username</th><th>Credits</th><th>Admin</th><th>Created</th></tr>
+      ${j.rows.map(r=>`<tr class="playerRow" data-u="${esc(r.username)}">
         <td>${esc(r.username)}</td>
+        <td>${r.credits}</td>
         <td><span class="pill">${r.isAdmin?'YES':'NO'}</span></td>
         <td>${new Date(r.createdAt).toLocaleString()}</td>
       </tr>`).join('')}
     `;
+
+    t.querySelectorAll('.playerRow').forEach(row=>{
+      row.onclick = async () => {
+        const username = row.dataset.u;
+        const info = await fetch('/api/admin/user/'+encodeURIComponent(username)).then(r=>r.json());
+        document.getElementById('playerInfo').innerHTML = `
+          <b>USERNAME:</b> ${esc(info.username)}<br>
+          <b>CREDITS:</b> ${info.credits} TC<br>
+          <b>AVATAR:</b> ${esc(info.avatar)}<br>
+          <b>ADMIN:</b> ${info.isAdmin ? 'YES' : 'NO'}
+        `;
+        document.getElementById('playerModal').style.display='flex';
+      };
+    });
   }
+
+  function closeModal(){ document.getElementById('playerModal').style.display='none'; }
 
   async function loadTxns(){
     const j = await fetch('/api/admin/txns').then(r=>r.json());
     const t = document.getElementById('txns');
+
     t.innerHTML = `
       <tr><th>Type</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
-      ${j.rows.map(r=>`<tr>
-        <td>${esc(r.type)}</td>
-        <td>${r.amount}</td>
-        <td><span class="pill">${esc(r.status)}</span></td>
-        <td>${new Date(r.createdAt).toLocaleString()}</td>
-        <td class="row">
-          <button data-id="${r._id}" data-s="APPROVED">Approve</button>
-          <button data-id="${r._id}" data-s="REJECTED">Reject</button>
-        </td>
-      </tr>`).join('')}
+      ${j.rows.map(r=>{
+        const disabled = r.status !== 'PENDING' ? 'disabled' : '';
+        return `<tr>
+          <td>${esc(r.type)}</td>
+          <td>${r.amount}</td>
+          <td><span class="pill">${esc(r.status)}</span></td>
+          <td>${new Date(r.createdAt).toLocaleString()}</td>
+          <td class="row">
+            <button class="green" ${disabled} data-id="${r._id}" data-s="APPROVED">Approve</button>
+            <button class="gray" ${disabled} data-id="${r._id}" data-s="REJECTED">Reject</button>
+          </td>
+        </tr>`;
+      }).join('')}
     `;
 
-    t.querySelectorAll('button').forEach(btn=>{
+    t.querySelectorAll('button[data-id]').forEach(btn=>{
       btn.onclick = async () => {
+        btn.disabled = true;
         await fetch('/api/admin/txns/'+btn.dataset.id, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -98,20 +145,25 @@
   async function loadTickets(){
     const j = await fetch('/api/admin/tickets').then(r=>r.json());
     const t = document.getElementById('tickets');
+
     t.innerHTML = `
       <tr><th>Subject</th><th>Status</th><th>Created</th><th>Action</th></tr>
-      ${j.rows.map(r=>`<tr>
-        <td>${esc(r.subject)}</td>
-        <td><span class="pill">${esc(r.status)}</span></td>
-        <td>${new Date(r.createdAt).toLocaleString()}</td>
-        <td class="row">
-          <button data-id="${r._id}" data-s="OPEN">Open</button>
-          <button data-id="${r._id}" data-s="CLOSED">Close</button>
-        </td>
-      </tr>`).join('')}
+      ${j.rows.map(r=>{
+        const disabled = r.status === 'CLOSED' ? 'disabled' : '';
+        return `<tr>
+          <td>${esc(r.subject)}</td>
+          <td><span class="pill">${esc(r.status)}</span></td>
+          <td>${new Date(r.createdAt).toLocaleString()}</td>
+          <td class="row">
+            <button class="gray" ${disabled} data-id="${r._id}" data-s="CLOSED">Close</button>
+          </td>
+        </tr>`;
+      }).join('')}
     `;
-    t.querySelectorAll('button').forEach(btn=>{
+
+    t.querySelectorAll('button[data-id]').forEach(btn=>{
       btn.onclick = async () => {
+        btn.disabled = true;
         await fetch('/api/admin/tickets/'+btn.dataset.id, {
           method:'POST',
           headers:{'Content-Type':'application/json'},
