@@ -8,17 +8,18 @@
   <style>
     body{margin:0;background:#121216;color:#fff;font-family:'Press Start 2P',cursive}
     .wrap{padding:18px;max-width:1000px;margin:0 auto}
-    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
     button,a.btn{font-family:'Press Start 2P';font-size:10px;padding:10px 12px;background:#feca57;border:2px solid #000;cursor:pointer;text-decoration:none;color:#000}
+    button.gray{background:#555;color:#fff}
     .card{background:#1e1e24;border:4px solid #000;box-shadow:6px 6px 0 #000;padding:12px;margin:14px 0}
     label{display:block;margin:10px 0 6px;font-size:10px;color:#aaa}
     input,textarea,select{
       width:100%;box-sizing:border-box;
       padding:12px;font-family:'Press Start 2P';
-      font-size:12px;line-height:1.2;
+      font-size:12px;line-height:1.2;height:48px;
       background:#000;color:#fff;border:2px solid #555
     }
-    textarea{min-height:120px;resize:vertical}
+    textarea{min-height:120px;resize:vertical;height:auto}
     table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif}
     th,td{border-bottom:1px solid #2b2b33;padding:8px 6px;font-size:14px}
     th{color:#aaa;text-align:left}
@@ -32,7 +33,8 @@
     <div class="top">
       <h1 style="margin:0;font-size:14px;color:#feca57">SUPPORT / REQUESTS</h1>
       <a class="btn" href="/index.html" style="margin-left:auto">Back</a>
-      <button id="logout">Logout</button>
+      <button class="gray" onclick="location.reload()">REFRESH</button>
+      <button id="logout" class="gray">LOGOUT</button>
     </div>
 
     <div class="card">
