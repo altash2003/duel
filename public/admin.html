@@ -1,189 +1,353 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin Panel</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADMIN PANEL</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;background:#121216;color:#fff;font-family:'Press Start 2P',cursive}
-    .wrap{padding:18px;max-width:1200px;margin:0 auto}
-    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-    button,a.btn{
-      font-family:'Press Start 2P';font-size:10px;padding:10px 12px;background:#feca57;border:2px solid #000;
-      cursor:pointer;text-decoration:none;color:#000
-    }
-    button.gray{background:#555;color:#fff}
-    button.green{background:#2ecc71;color:#000}
-    .card{background:#1e1e24;border:4px solid #000;box-shadow:6px 6px 0 #000;padding:12px;margin:14px 0}
-    h2{margin:0 0 10px;font-size:12px;color:#feca57}
-    table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif}
-    th,td{border-bottom:1px solid #2b2b33;padding:8px 6px;font-size:14px}
-    th{color:#aaa;text-align:left}
-    .pill{padding:2px 8px;border:1px solid #444;border-radius:999px;font-size:12px}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .small{font-size:12px;color:#bbb;font-family:'Rajdhani',sans-serif}
-    .playerRow{cursor:pointer}
-    .playerRow:hover{background:#2a2a33}
-    .modal{
-      display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:999;
-      align-items:center;justify-content:center;padding:20px
-    }
-    .modalInner{
-      width:min(520px,92vw);background:#000;border:4px solid #333;padding:14px;box-shadow:6px 6px 0 #000
-    }
+    body{margin:0;background:#0f0f12;color:#fff;font-family:'Press Start 2P';padding:18px}
+    .wrap{max-width:1100px;margin:0 auto}
+    h1{color:#feca57;margin:0 0 14px 0}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+    .btn{background:#2f3640;color:#fff;border:2px solid #000;padding:10px 12px;font-size:10px;font-family:'Press Start 2P';cursor:pointer;box-shadow:3px 3px 0 #000}
+    .btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(1)}
+    .btn.green{background:#2ecc71;color:#000}
+    .btn.red{background:#ff4757;color:#fff}
+    .btn.gray{background:#555}
+    .card{background:#121218;border:2px solid #333;padding:12px;box-shadow:3px 3px 0 #000}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif;font-size:14px}
+    th,td{border-bottom:1px solid #222;padding:10px;text-align:left;vertical-align:top}
+    th{color:#feca57;font-family:'Press Start 2P';font-size:10px}
+    .tag{display:inline-block;border:1px solid #444;border-radius:999px;padding:2px 8px;font-size:11px;color:#aaa}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .tab{padding:10px 12px;border:2px solid #333;background:#000;color:#aaa;cursor:pointer;font-size:10px}
+    .tab.active{border-color:#fff;color:#fff}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px}
+    textarea{width:100%;min-height:90px;background:#000;border:2px solid #333;color:#fff;padding:10px;font-family:ui-monospace}
+    input{width:100%;background:#000;border:2px solid #333;color:#fff;padding:10px}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <h1 style="margin:0;font-size:14px;color:#feca57">ADMIN PANEL</h1>
-      <a class="btn" href="/index.html" style="margin-left:auto">Back</a>
-      <button class="gray" onclick="location.reload()">REFRESH</button>
-      <button id="logout" class="gray">LOGOUT</button>
-    </div>
+<div class="wrap">
+  <h1>ADMIN PANEL</h1>
 
-    <div class="card">
-      <h2>PLAYERS DATABASE (CLICK A PLAYER)</h2>
-      <table id="players"></table>
-    </div>
-
-    <div class="card">
-      <h2>TOPUP / WITHDRAWAL REQUESTS</h2>
-      <table id="txns"></table>
-    </div>
-
-    <div class="card">
-      <h2>SUPPORT TICKETS</h2>
-      <table id="tickets"></table>
-    </div>
+  <div class="row">
+    <button class="btn gray" onclick="location.reload()">REFRESH</button>
+    <button class="btn" onclick="location.href='/'">BACK TO GAME</button>
   </div>
 
-  <div class="modal" id="playerModal">
-    <div class="modalInner">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div style="color:#feca57;font-size:12px">PLAYER INFO</div>
-        <button class="gray" onclick="closeModal()">CLOSE</button>
+  <div class="grid">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div>PLAYERS</div>
+        <span class="tag">click a username</span>
       </div>
-      <div id="playerInfo" class="small" style="margin-top:10px;line-height:1.6"></div>
+      <div id="players"></div>
+      <div class="card" style="margin-top:10px">
+        <div style="margin-bottom:8px">PLAYER INFO</div>
+        <div id="playerInfo" class="mono">Click a player to view credits.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="margin-bottom:10px">TOPUP / WITHDRAW</div>
+      <div class="tabs">
+        <button class="tab active" id="txTabActive" onclick="setTxArchived(false)">ACTIVE</button>
+        <button class="tab" id="txTabArchived" onclick="setTxArchived(true)">ARCHIVED</button>
+      </div>
+      <div id="txns"></div>
     </div>
   </div>
+
+  <div class="card" style="margin-top:12px">
+    <div style="margin-bottom:10px">SUPPORT TICKETS</div>
+    <div class="tabs">
+      <button class="tab active" id="tTabActive" onclick="setTicketArchived(false)">ACTIVE</button>
+      <button class="tab" id="tTabArchived" onclick="setTicketArchived(true)">ARCHIVED</button>
+    </div>
+    <div id="tickets"></div>
+
+    <div class="card" style="margin-top:10px">
+      <div style="margin-bottom:8px">TICKET THREAD</div>
+      <div id="ticketThread" class="mono">Select a ticket to view messages.</div>
+      <div style="margin-top:10px">
+        <textarea id="ticketReply" placeholder="Type admin reply..."></textarea>
+        <div class="row">
+          <button class="btn green" onclick="sendTicketReply()">SEND REPLY</button>
+          <button class="btn gray" onclick="closeTicket()">CLOSE TICKET</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-  async function mustBeAdmin(){
-    const me = await fetch('/api/credits').then(r=>r.json()).catch(()=>({}));
-    if(!me.ok){ location.href='/login.html'; return; }
-    if(!me.isAdmin) location.href='/index.html';
-  }
+  let txArchived = false;
+  let ticketArchived = false;
+  let selectedTicketId = null;
 
-  function esc(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  async function api(url, opt){
+    const r = await fetch(url, opt);
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error || 'Request failed');
+    return j;
+  }
 
   async function loadPlayers(){
-    const j = await fetch('/api/admin/players').then(r=>r.json());
-    const t = document.getElementById('players');
-    t.innerHTML = `
-      <tr><th>Username</th><th>Credits</th><th>Admin</th><th>Created</th></tr>
-      ${j.rows.map(r=>`<tr class="playerRow" data-u="${esc(r.username)}">
-        <td>${esc(r.username)}</td>
-        <td>${Number.isFinite(r.credits)?r.credits:0}</td>
-        <td><span class="pill">${r.isAdmin?'YES':'NO'}</span></td>
-        <td>${new Date(r.createdAt).toLocaleString()}</td>
-      </tr>`).join('')}
-    `;
+    const j = await api('/api/admin/players');
+    const el = document.getElementById('players');
+    el.innerHTML = '';
+    const list = document.createElement('div');
+    list.style.display='flex'; list.style.flexDirection='column'; list.style.gap='6px';
 
-    t.querySelectorAll('.playerRow').forEach(row=>{
-      row.onclick = async () => {
-        const username = row.dataset.u;
-        const info = await fetch('/api/admin/user/'+encodeURIComponent(username)).then(r=>r.json());
-        document.getElementById('playerInfo').innerHTML = `
-          <b>USERNAME:</b> ${esc(info.username)}<br>
-          <b>CREDITS:</b> ${Number.isFinite(info.credits)?info.credits:0} TC<br>
-          <b>AVATAR:</b> ${esc(info.avatar)}<br>
-          <b>ADMIN:</b> ${info.isAdmin ? 'YES' : 'NO'}
-        `;
-        document.getElementById('playerModal').style.display='flex';
+    j.rows.forEach(p=>{
+      const b = document.createElement('button');
+      b.className='btn';
+      b.textContent = p.username + (p.isAdmin ? ' (ADMIN)' : '');
+      b.onclick = async ()=>{
+        const info = await api('/api/admin/players'); // quick refresh
+        const u = info.rows.find(x=>x.username===p.username);
+        document.getElementById('playerInfo').textContent =
+          `username: ${u.username}\nadmin: ${u.isAdmin}\ncredits: ${u.credits}\navatar: ${u.avatar}`;
       };
+      list.appendChild(b);
     });
+
+    el.appendChild(list);
   }
 
-  function closeModal(){ document.getElementById('playerModal').style.display='none'; }
+  function setTxArchived(v){
+    txArchived = v;
+    document.getElementById('txTabActive').classList.toggle('active', !v);
+    document.getElementById('txTabArchived').classList.toggle('active', v);
+    loadTxns();
+  }
 
   async function loadTxns(){
-    const j = await fetch('/api/admin/txns').then(r=>r.json());
-    const t = document.getElementById('txns');
+    const j = await api('/api/admin/txns?archived=' + (txArchived ? '1':'0'));
+    const el = document.getElementById('txns');
 
-    t.innerHTML = `
-      <tr><th>Type</th><th>Amount</th><th>Status</th><th>Created</th><th>Action</th></tr>
-      ${j.rows.map(r=>{
-        const disabled = r.status !== 'PENDING' ? 'disabled' : '';
-        return `<tr>
-          <td>${esc(r.type)}</td>
-          <td>${r.amount}</td>
-          <td><span class="pill">${esc(r.status)}</span></td>
-          <td>${new Date(r.createdAt).toLocaleString()}</td>
-          <td class="row">
-            <button class="green" ${disabled} data-id="${r._id}" data-s="APPROVED">Approve</button>
-            <button class="gray" ${disabled} data-id="${r._id}" data-s="REJECTED">Reject</button>
-          </td>
-        </tr>`;
-      }).join('')}
+    if (!j.rows.length) {
+      el.innerHTML = '<div class="mono">No transactions.</div>';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>TYPE</th><th>AMOUNT</th><th>STATUS</th><th>NOTE</th><th>ACTION</th>
+        </tr>
+      </thead>
     `;
+    const tb = document.createElement('tbody');
 
-    t.querySelectorAll('button[data-id]').forEach(btn=>{
-      btn.onclick = async () => {
-        btn.disabled = true;
-        await fetch('/api/admin/txns/'+btn.dataset.id, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ status: btn.dataset.s })
-        });
-        loadTxns();
-      };
+    j.rows.forEach(t=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${t.type}</td>
+        <td>${t.amount}</td>
+        <td><span class="tag">${t.status}</span></td>
+        <td class="mono">${(t.note||'')}</td>
+        <td></td>
+      `;
+      const td = tr.querySelector('td:last-child');
+
+      if (!txArchived) {
+        const approve = document.createElement('button');
+        approve.className='btn green';
+        approve.textContent='APPROVE';
+
+        const reject = document.createElement('button');
+        reject.className='btn red';
+        reject.textContent='REJECT';
+
+        // ✅ grey out after action (both)
+        const done = (t.status !== 'PENDING');
+        approve.disabled = done;
+        reject.disabled = done;
+
+        approve.onclick = async ()=>{
+          approve.disabled = true;
+          reject.disabled = true;
+          try {
+            await api('/api/admin/txns/' + t._id, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ status:'APPROVED' })
+            });
+          } catch(e) { alert(e.message); }
+          loadTxns();
+          loadPlayers();
+        };
+
+        reject.onclick = async ()=>{
+          approve.disabled = true;
+          reject.disabled = true;
+          try {
+            await api('/api/admin/txns/' + t._id, {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({ status:'REJECTED' })
+            });
+          } catch(e) { alert(e.message); }
+          loadTxns();
+        };
+
+        const arch = document.createElement('button');
+        arch.className='btn gray';
+        arch.textContent='ARCHIVE';
+        arch.onclick = async ()=>{
+          await api('/api/admin/txns/' + t._id + '/archive', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ archived:true })
+          });
+          loadTxns();
+        };
+
+        td.appendChild(approve);
+        td.appendChild(document.createElement('br'));
+        td.appendChild(reject);
+        td.appendChild(document.createElement('br'));
+        td.appendChild(arch);
+      } else {
+        const un = document.createElement('button');
+        un.className='btn gray';
+        un.textContent='UNARCHIVE';
+        un.onclick = async ()=>{
+          await api('/api/admin/txns/' + t._id + '/archive', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ archived:false })
+          });
+          loadTxns();
+        };
+        td.appendChild(un);
+      }
+
+      tb.appendChild(tr);
     });
+
+    table.appendChild(tb);
+    el.innerHTML='';
+    el.appendChild(table);
+  }
+
+  function setTicketArchived(v){
+    ticketArchived = v;
+    document.getElementById('tTabActive').classList.toggle('active', !v);
+    document.getElementById('tTabArchived').classList.toggle('active', v);
+    loadTickets();
   }
 
   async function loadTickets(){
-    const j = await fetch('/api/admin/tickets').then(r=>r.json());
-    const t = document.getElementById('tickets');
+    const j = await api('/api/admin/tickets?archived=' + (ticketArchived ? '1':'0'));
+    const el = document.getElementById('tickets');
 
-    t.innerHTML = `
-      <tr><th>Subject</th><th>Status</th><th>Created</th><th>Action</th></tr>
-      ${j.rows.map(r=>{
-        const disabled = r.status === 'CLOSED' ? 'disabled' : '';
-        return `<tr>
-          <td>${esc(r.subject)}</td>
-          <td><span class="pill">${esc(r.status)}</span></td>
-          <td>${new Date(r.createdAt).toLocaleString()}</td>
-          <td class="row">
-            <button class="gray" ${disabled} data-id="${r._id}" data-s="CLOSED">Close</button>
-          </td>
-        </tr>`;
-      }).join('')}
+    if (!j.rows.length) {
+      el.innerHTML = '<div class="mono">No tickets.</div>';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>SUBJECT</th><th>STATUS</th><th>OPEN</th><th>ARCHIVE</th>
+        </tr>
+      </thead>
     `;
+    const tb = document.createElement('tbody');
 
-    t.querySelectorAll('button[data-id]').forEach(btn=>{
-      btn.onclick = async () => {
-        btn.disabled = true;
-        await fetch('/api/admin/tickets/'+btn.dataset.id, {
+    j.rows.forEach(t=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono">${t.subject}</td>
+        <td><span class="tag">${t.status}</span></td>
+        <td></td>
+        <td></td>
+      `;
+
+      const openTd = tr.children[2];
+      const archTd = tr.children[3];
+
+      const openBtn = document.createElement('button');
+      openBtn.className='btn';
+      openBtn.textContent='OPEN THREAD';
+      openBtn.onclick = ()=>selectTicket(t._id);
+      openTd.appendChild(openBtn);
+
+      const aBtn = document.createElement('button');
+      aBtn.className='btn gray';
+      aBtn.textContent = ticketArchived ? 'UNARCHIVE' : 'ARCHIVE';
+      aBtn.onclick = async ()=>{
+        await api('/api/admin/tickets/' + t._id + '/archive', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ status: btn.dataset.s })
+          body: JSON.stringify({ archived: !ticketArchived })
         });
+        if (selectedTicketId === t._id) {
+          selectedTicketId = null;
+          document.getElementById('ticketThread').textContent = 'Select a ticket to view messages.';
+        }
         loadTickets();
       };
+      archTd.appendChild(aBtn);
+
+      tb.appendChild(tr);
     });
+
+    table.appendChild(tb);
+    el.innerHTML='';
+    el.appendChild(table);
   }
 
-  document.getElementById('logout').onclick = async () => {
-    await fetch('/api/logout', {method:'POST'});
-    location.href='/login.html';
-  };
+  async function selectTicket(id){
+    selectedTicketId = id;
+    // admin can view using player route (server allows admin)
+    const j = await api('/api/tickets/' + id);
+    const lines = j.ticket.messages.map(m => `[${new Date(m.ts).toLocaleString()}] ${m.from}: ${m.text}`);
+    document.getElementById('ticketThread').textContent = lines.join('\n');
+  }
+
+  async function sendTicketReply(){
+    if (!selectedTicketId) return alert('Select a ticket first');
+    const text = document.getElementById('ticketReply').value.trim();
+    if (!text) return;
+
+    await api('/api/tickets/' + selectedTicketId + '/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text })
+    });
+    document.getElementById('ticketReply').value = '';
+    selectTicket(selectedTicketId);
+    loadTickets();
+  }
+
+  async function closeTicket(){
+    if (!selectedTicketId) return alert('Select a ticket first');
+    await api('/api/admin/tickets/' + selectedTicketId + '/status', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:'CLOSED' })
+    });
+    selectTicket(selectedTicketId);
+    loadTickets();
+  }
 
   (async ()=>{
-    await mustBeAdmin();
-    await loadPlayers();
-    await loadTxns();
-    await loadTickets();
+    try{
+      await loadPlayers();
+      await loadTxns();
+      await loadTickets();
+    }catch(e){
+      alert(e.message);
+      location.href='/';
+    }
   })();
 </script>
 </body>
