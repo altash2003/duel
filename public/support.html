@@ -1,147 +1,154 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Support</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SUPPORT</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;background:#121216;color:#fff;font-family:'Press Start 2P',cursive}
-    .wrap{padding:18px;max-width:1000px;margin:0 auto}
-    .top{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-    button,a.btn{font-family:'Press Start 2P';font-size:10px;padding:10px 12px;background:#feca57;border:2px solid #000;cursor:pointer;text-decoration:none;color:#000}
-    button.gray{background:#555;color:#fff}
-    .card{background:#1e1e24;border:4px solid #000;box-shadow:6px 6px 0 #000;padding:12px;margin:14px 0}
-    label{display:block;margin:10px 0 6px;font-size:10px;color:#aaa}
-    input,textarea,select{
-      width:100%;box-sizing:border-box;
-      padding:12px;font-family:'Press Start 2P';
-      font-size:12px;line-height:1.2;height:48px;
-      background:#000;color:#fff;border:2px solid #555
-    }
-    textarea{min-height:120px;resize:vertical;height:auto}
-    table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif}
-    th,td{border-bottom:1px solid #2b2b33;padding:8px 6px;font-size:14px}
-    th{color:#aaa;text-align:left}
-    h2{margin:0 0 10px;font-size:12px;color:#feca57}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .row > div{flex:1 1 220px}
+    body{margin:0;background:#0f0f12;color:#fff;font-family:'Press Start 2P';padding:18px}
+    .wrap{max-width:1050px;margin:0 auto}
+    h1{color:#feca57;margin:0 0 14px 0}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+    .btn{background:#2f3640;color:#fff;border:2px solid #000;padding:10px 12px;font-size:10px;font-family:'Press Start 2P';cursor:pointer;box-shadow:3px 3px 0 #000}
+    .card{background:#121218;border:2px solid #333;padding:12px;box-shadow:3px 3px 0 #000}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    input,textarea{width:100%;background:#000;border:2px solid #333;color:#fff;padding:10px;font-family:ui-monospace}
+    textarea{min-height:90px}
+    table{width:100%;border-collapse:collapse;font-family:'Rajdhani',sans-serif;font-size:14px}
+    th,td{border-bottom:1px solid #222;padding:10px;text-align:left;vertical-align:top}
+    th{color:#feca57;font-family:'Press Start 2P';font-size:10px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px;white-space:pre-wrap}
+    .tag{display:inline-block;border:1px solid #444;border-radius:999px;padding:2px 8px;font-size:11px;color:#aaa}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="top">
-      <h1 style="margin:0;font-size:14px;color:#feca57">SUPPORT / REQUESTS</h1>
-      <a class="btn" href="/index.html" style="margin-left:auto">Back</a>
-      <button class="gray" onclick="location.reload()">REFRESH</button>
-      <button id="logout" class="gray">LOGOUT</button>
-    </div>
+<div class="wrap">
+  <h1>SUPPORT</h1>
+  <div class="row">
+    <button class="btn" onclick="location.href='/'">BACK</button>
+    <button class="btn" onclick="location.reload()">REFRESH</button>
+  </div>
 
+  <div class="grid">
     <div class="card">
-      <h2>TOPUP / WITHDRAWAL</h2>
+      <div style="margin-bottom:10px">OPEN NEW TICKET</div>
+      <input id="subj" placeholder="SUBJECT" />
+      <textarea id="msg" placeholder="Describe your issue..."></textarea>
       <div class="row">
-        <div>
-          <label>TYPE</label>
-          <select id="type">
-            <option value="TOPUP">TOPUP</option>
-            <option value="WITHDRAW">WITHDRAW</option>
-          </select>
-        </div>
-        <div>
-          <label>AMOUNT</label>
-          <input id="amount" placeholder="AMOUNT" inputmode="numeric" />
-        </div>
-      </div>
-      <label>NOTE (OPTIONAL)</label>
-      <input id="note" placeholder="Short note (optional)" />
-      <button id="sendTxn" style="margin-top:10px">SUBMIT REQUEST</button>
-      <div style="margin-top:12px">
-        <table id="myTxns"></table>
+        <button class="btn" onclick="createTicket()">SUBMIT</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>SUPPORT TICKET</h2>
-      <label>SUBJECT</label>
-      <input id="subj" placeholder="Subject" />
-      <label>MESSAGE</label>
-      <textarea id="msg" placeholder="Type your issue here..."></textarea>
-      <button id="sendTicket" style="margin-top:10px">SUBMIT TICKET</button>
-      <div style="margin-top:12px">
-        <table id="myTickets"></table>
-      </div>
+      <div style="margin-bottom:10px">MY TICKETS</div>
+      <div id="list"></div>
     </div>
   </div>
 
+  <div class="card" style="margin-top:12px">
+    <div style="margin-bottom:10px">TICKET THREAD</div>
+    <div id="thread" class="mono">Select a ticket to view messages.</div>
+    <div style="margin-top:10px">
+      <textarea id="reply" placeholder="Type reply..."></textarea>
+      <div class="row">
+        <button class="btn" onclick="sendReply()">SEND</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  async function mustBeAuthed(){
-    const me = await fetch('/api/me').then(r=>r.json());
-    if(!me.authed) location.href='/login.html';
-  }
-  function esc(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  let selectedId = null;
 
-  async function loadMyTxns(){
-    const j = await fetch('/api/txns').then(r=>r.json());
-    const t = document.getElementById('myTxns');
-    t.innerHTML = `
-      <tr><th>Type</th><th>Amount</th><th>Status</th><th>Created</th></tr>
-      ${(j.rows||[]).map(r=>`<tr>
-        <td>${esc(r.type)}</td><td>${r.amount}</td><td>${esc(r.status)}</td><td>${new Date(r.createdAt).toLocaleString()}</td>
-      </tr>`).join('')}
-    `;
-  }
-
-  async function loadMyTickets(){
-    const j = await fetch('/api/tickets').then(r=>r.json());
-    const t = document.getElementById('myTickets');
-    t.innerHTML = `
-      <tr><th>Subject</th><th>Status</th><th>Created</th></tr>
-      ${(j.rows||[]).map(r=>`<tr>
-        <td>${esc(r.subject)}</td><td>${esc(r.status)}</td><td>${new Date(r.createdAt).toLocaleString()}</td>
-      </tr>`).join('')}
-    `;
-  }
-
-  document.getElementById('sendTxn').onclick = async () => {
-    const type = document.getElementById('type').value;
-    const amount = document.getElementById('amount').value;
-    const note = document.getElementById('note').value;
-    const r = await fetch('/api/txns', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ type, amount, note })
-    });
+  async function api(url, opt){
+    const r = await fetch(url, opt);
     const j = await r.json().catch(()=>({}));
-    if(!r.ok){ alert(j.error || 'Failed'); return; }
-    document.getElementById('amount').value='';
-    document.getElementById('note').value='';
-    loadMyTxns();
-  };
+    if(!r.ok) throw new Error(j.error || 'Request failed');
+    return j;
+  }
 
-  document.getElementById('sendTicket').onclick = async () => {
-    const subject = document.getElementById('subj').value;
-    const message = document.getElementById('msg').value;
-    const r = await fetch('/api/tickets', {
+  async function createTicket(){
+    const subject = document.getElementById('subj').value.trim();
+    const message = document.getElementById('msg').value.trim();
+    if(!subject || !message) return alert('Fill subject and message');
+
+    await api('/api/tickets', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ subject, message })
     });
-    const j = await r.json().catch(()=>({}));
-    if(!r.ok){ alert(j.error || 'Failed'); return; }
+
     document.getElementById('subj').value='';
     document.getElementById('msg').value='';
-    loadMyTickets();
-  };
+    loadTickets();
+  }
 
-  document.getElementById('logout').onclick = async () => {
-    await fetch('/api/logout', {method:'POST'});
-    location.href='/login.html';
-  };
+  async function loadTickets(){
+    const j = await api('/api/tickets');
+    const el = document.getElementById('list');
+
+    if(!j.rows.length){
+      el.innerHTML = '<div class="mono">No tickets.</div>';
+      return;
+    }
+
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>SUBJECT</th><th>STATUS</th><th>OPEN</th></tr></thead>`;
+    const tb = document.createElement('tbody');
+
+    j.rows.forEach(t=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono">${t.subject}</td>
+        <td><span class="tag">${t.status}</span></td>
+        <td></td>
+      `;
+      const b = document.createElement('button');
+      b.className='btn';
+      b.textContent='OPEN';
+      b.onclick = ()=>selectTicket(t._id);
+      tr.children[2].appendChild(b);
+      tb.appendChild(tr);
+    });
+
+    table.appendChild(tb);
+    el.innerHTML='';
+    el.appendChild(table);
+  }
+
+  async function selectTicket(id){
+    selectedId = id;
+    const j = await api('/api/tickets/' + id);
+    const lines = j.ticket.messages.map(m => `[${new Date(m.ts).toLocaleString()}] ${m.from}: ${m.text}`);
+    document.getElementById('thread').textContent = lines.join('\n');
+  }
+
+  async function sendReply(){
+    if(!selectedId) return alert('Select a ticket first');
+    const text = document.getElementById('reply').value.trim();
+    if(!text) return;
+
+    await api('/api/tickets/' + selectedId + '/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text })
+    });
+    document.getElementById('reply').value='';
+    selectTicket(selectedId);
+    loadTickets();
+  }
 
   (async ()=>{
-    await mustBeAuthed();
-    await loadMyTxns();
-    await loadMyTickets();
+    try{
+      // redirect if not authed
+      const me = await fetch('/api/me').then(r=>r.json());
+      if(!me.authed) location.href='/login.html';
+      await loadTickets();
+    }catch(e){
+      alert(e.message);
+      location.href='/';
+    }
   })();
 </script>
 </body>
